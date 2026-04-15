@@ -299,7 +299,7 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:
     <div class="view" id="v-restaurants">
       <div class="metrics" style="grid-template-columns:repeat(3,1fr)">
         <div class="mc amb"><div class="mc-lbl">Total Restaurants</div><div class="mc-val" id="r-total">0</div></div>
-        <div class="mc red"><div class="mc-lbl">On Swiggy/Zomato</div><div class="mc-val" id="r-swiggy">0</div></div>
+        <div class="mc red"><div class="mc-lbl">On delivery apps</div><div class="mc-val" id="r-platforms">0</div></div>
         <div class="mc grn"><div class="mc-lbl">In Pilot Zone</div><div class="mc-val" id="r-zone">0</div></div>
       </div>
       <div class="row2">
@@ -632,7 +632,7 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:
     var haveFav = u.filter(function(e) { return e.fav_restaurants && e.fav_restaurants.trim(); }).length;
     var sigData = [
       { ic: 'red', i: '&#128293;', l: 'Daily orderers', v: daily },
-      { ic: 'amb', i: '&#128176;', l: 'Rests on both platforms', v: onBoth },
+      { ic: 'amb', i: '&#128176;', l: 'On multiple delivery apps', v: onBoth },
       { ic: 'grn', i: '&#128205;', l: 'In pilot zone', v: inZone },
       { ic: 'blu', i: '&#10084;', l: 'Users shared fav restaurants', v: haveFav },
     ];
@@ -727,7 +727,7 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:
   function renderRests() {
     var r = rests();
     set('r-total', r.length);
-    set('r-swiggy', r.filter(function(e) { return e.platform && (e.platform.toLowerCase().indexOf('swiggy') >= 0 || e.platform.toLowerCase().indexOf('both') >= 0); }).length);
+    set('r-platforms', r.filter(function(e) { return e.platform && e.platform.toLowerCase() !== 'no' && e.platform.toLowerCase().indexOf('not') < 0; }).length);
     set('r-zone', r.filter(function(e) { return PILOT.some(function(p) { return e.area && e.area.indexOf(p) >= 0; }); }).length);
     set('r-lbl', r.length + ' restaurants');
     makeBars('cuis-bars', countBy(r, 'cuisine'));
@@ -783,12 +783,12 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:
     set('vc-u', u); set('vc-r', r); set('vc-a', areas); set('vc-daily', daily);
     var uSig = document.getElementById('vc-user-signals');
     if (uSig) {
-      var onSwiggy = users().filter(function(e) { return e.platform && e.platform.toLowerCase().indexOf('swiggy') >= 0; }).length;
+      var onDeliveryApps = users().filter(function(e) { return e.platform && e.platform.toLowerCase().indexOf('delivery') >= 0; }).length;
       var inZone = users().filter(function(e) { return PILOT.some(function(p) { return e.area && e.area.indexOf(p) >= 0; }); }).length;
       uSig.innerHTML = [
         { ic: 'red', i: '&#128293;', l: 'Daily orderers', v: daily },
         { ic: 'blu', i: '&#128205;', l: 'In pilot zone', v: inZone },
-        { ic: 'grn', i: '&#128241;', l: 'On Swiggy/Zomato', v: onSwiggy },
+        { ic: 'grn', i: '&#128241;', l: 'On delivery apps', v: onDeliveryApps },
         { ic: 'amb', i: '&#10084;', l: 'Total users', v: u },
       ].map(function(s) {
         return '<div class="mstat"><div class="mstat-ico ' + s.ic + '">' + s.i + '</div><div><div class="mstat-lbl">' + s.l + '</div><div class="mstat-val">' + s.v + '</div></div></div>';
@@ -799,7 +799,7 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:
       var onBoth = rests().filter(function(e) { return e.platform && e.platform.toLowerCase().indexOf('both') >= 0; }).length;
       var rInZone = rests().filter(function(e) { return PILOT.some(function(p) { return e.area && e.area.indexOf(p) >= 0; }); }).length;
       rSig.innerHTML = [
-        { ic: 'amb', i: '&#128176;', l: 'On both platforms', v: onBoth },
+        { ic: 'amb', i: '&#128176;', l: 'On multiple apps', v: onBoth },
         { ic: 'grn', i: '&#128205;', l: 'In pilot zone', v: rInZone },
         { ic: 'red', i: '&#127869;', l: 'Total restaurants', v: r },
         { ic: 'blu', i: '&#128202;', l: 'Cuisine types', v: Object.keys(countBy(rests(), 'cuisine')).length },
@@ -826,9 +826,9 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:
       var uniquePilot = pilotAreas.filter(function(a, i) { return pilotAreas.indexOf(a) === i; }).join(', ') || 'None yet';
       st.textContent = 'Fudzo — Market Validation Report\nGenerated: ' + new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) +
         '\n\nDEMAND SIGNAL (Users)\nTotal registered: ' + u + '\nDaily orderers: ' + daily + ' (' + (u ? Math.round(daily / u * 100) : 0) + '% of registrants)\nIn pilot zone: ' + users().filter(function(e) { return PILOT.some(function(p) { return e.area && e.area.indexOf(p) >= 0; }); }).length +
-        '\n\nSUPPLY SIGNAL (Restaurants)\nTotal registered: ' + r + '\nOn both platforms: ' + rests().filter(function(e) { return e.platform && e.platform.toLowerCase().indexOf('both') >= 0; }).length + '\nIn pilot zone: ' + rests().filter(function(e) { return PILOT.some(function(p) { return e.area && e.area.indexOf(p) >= 0; }); }).length + '\nCuisines: ' + cuisines +
+        '\n\nSUPPLY SIGNAL (Restaurants)\nTotal registered: ' + r + '\nOn multiple apps: ' + rests().filter(function(e) { return e.platform && e.platform.toLowerCase().indexOf('both') >= 0; }).length + '\nIn pilot zone: ' + rests().filter(function(e) { return PILOT.some(function(p) { return e.area && e.area.indexOf(p) >= 0; }); }).length + '\nCuisines: ' + cuisines +
         '\n\nGEOGRAPHIC COVERAGE\nAreas represented: ' + areas + '\nPilot zone: ' + uniquePilot +
-        '\n\nCONCLUSION\n' + (u + r) + ' total registrations validate strong organic interest in Fudzo.\n' + (u ? Math.round(daily / u * 100) : 0) + '% of users are daily food delivery customers — prime conversion targets.\n' + r + ' restaurants ready to abandon/supplement Swiggy/Zomato confirms supply-side pain.\nData collected organically via fudzo.in without paid advertising.';
+        '\n\nCONCLUSION\n' + (u + r) + ' total registrations validate strong organic interest in Fudzo.\n' + (u ? Math.round(daily / u * 100) : 0) + '% of users are daily food delivery customers — prime conversion targets.\n' + r + ' restaurants ready to move away from existing platforms confirms supply-side pain.\nData collected organically via fudzo.in without paid advertising.';
     }
   }
 
@@ -837,16 +837,16 @@ html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:
     var now = new Date();
     function ago(h) { var d = new Date(now); d.setHours(d.getHours() - h); return d.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }); }
     var demo = [
-      { type: 'User', name: 'Arjun Mehta', phone: '+91 98001 23456', email: 'arjun.mehta@gmail.com', area: 'Gachibowli', platform: 'Both Swiggy & Zomato', frequency: 'Daily', fav_restaurants: 'Chai Stop, Naan & Flame', message: 'Tired of hidden fees', submitted_at: ago(1) },
-      { type: 'Restaurant', restaurant_name: 'Chai Stop', owner_name: 'Ramesh Iyer', phone: '+91 98765 11001', email: 'chaistop@gmail.com', area: 'Gachibowli', service_area: 'Gachibowli, Nanakramguda', cuisine: 'Cafe / Snacks / Chai', platform: 'Yes — both platforms', message: '28% commission killing margins', submitted_at: ago(2) },
-      { type: 'User', name: 'Priya Sharma', phone: '+91 97001 88234', email: 'priya@outlook.com', area: 'Nanakramguda', platform: 'Swiggy only', frequency: '3–5 times a week', fav_restaurants: 'Paradise, Ohris', message: '', submitted_at: ago(4) },
-      { type: 'User', name: 'Kiran Reddy', phone: '+91 90000 44321', email: 'kiran.r@infosys.com', area: 'Gachibowli', platform: 'Both Swiggy & Zomato', frequency: 'Daily', fav_restaurants: 'Bawarchi, Biryani Blues', message: 'Need corporate plan for office', submitted_at: ago(6) },
-      { type: 'Restaurant', restaurant_name: 'Naan & Flame', owner_name: 'Suresh Gupta', phone: '+91 99001 55678', email: 'naan.flame@gmail.com', area: 'Gachibowli', service_area: 'Gachibowli', cuisine: 'North Indian', platform: 'Yes — both platforms', message: 'Swiggy delisted us twice', submitted_at: ago(8) },
-      { type: 'User', name: 'Neha Kapoor', phone: '+91 91001 77654', email: 'neha@deloitte.com', area: 'HITEC City', platform: 'Both Swiggy & Zomato', frequency: 'Daily', fav_restaurants: 'WOW Momo, Subway', message: '', submitted_at: ago(10) },
+      { type: 'User', name: 'Arjun Mehta', phone: '+91 98001 23456', email: 'arjun.mehta@gmail.com', area: 'Gachibowli', platform: 'Multiple delivery apps', frequency: 'Daily', fav_restaurants: 'Chai Stop, Naan & Flame', message: 'Tired of hidden fees', submitted_at: ago(1) },
+      { type: 'Restaurant', restaurant_name: 'Chai Stop', owner_name: 'Ramesh Iyer', phone: '+91 98765 11001', email: 'chaistop@gmail.com', area: 'Gachibowli', service_area: 'Gachibowli, Nanakramguda', cuisine: 'Cafe / Snacks / Chai', platform: 'Yes, on multiple apps', message: 'High commission killing margins', submitted_at: ago(2) },
+      { type: 'User', name: 'Priya Sharma', phone: '+91 97001 88234', email: 'priya@outlook.com', area: 'Nanakramguda', platform: 'One delivery app', frequency: '3–5 times a week', fav_restaurants: 'Paradise, Ohris', message: '', submitted_at: ago(4) },
+      { type: 'User', name: 'Kiran Reddy', phone: '+91 90000 44321', email: 'kiran.r@infosys.com', area: 'Gachibowli', platform: 'Multiple delivery apps', frequency: 'Daily', fav_restaurants: 'Bawarchi, Biryani Blues', message: 'Need corporate plan for office', submitted_at: ago(6) },
+      { type: 'Restaurant', restaurant_name: 'Naan & Flame', owner_name: 'Suresh Gupta', phone: '+91 99001 55678', email: 'naan.flame@gmail.com', area: 'Gachibowli', service_area: 'Gachibowli', cuisine: 'North Indian', platform: 'Yes, on multiple apps', message: 'Platform delisted us twice', submitted_at: ago(8) },
+      { type: 'User', name: 'Neha Kapoor', phone: '+91 91001 77654', email: 'neha@deloitte.com', area: 'HITEC City', platform: 'Multiple delivery apps', frequency: 'Daily', fav_restaurants: 'WOW Momo, Subway', message: '', submitted_at: ago(10) },
       { type: 'Restaurant', restaurant_name: 'Bun Maska Co.', owner_name: 'Asif Khan', phone: '+91 97654 22134', email: 'bunmaska@gmail.com', area: 'Nanakramguda', service_area: 'Nanakramguda, Gachibowli', cuisine: 'Cafe / Snacks / Chai', platform: 'No — direct orders only', message: 'Want to start delivery without high fees', submitted_at: ago(14) },
-      { type: 'User', name: 'Vikram Nair', phone: '+91 93000 76541', email: 'vikram@microsoft.com', area: 'Gachibowli', platform: 'Both Swiggy & Zomato', frequency: 'Daily', fav_restaurants: 'Bay Leaf, Ulavacharu', message: 'Please launch ASAP!', submitted_at: ago(18) },
-      { type: 'Restaurant', restaurant_name: 'Bay Leaf Coastal', owner_name: 'Venkat Rao', phone: '+91 98001 66543', email: 'bayleaf@gmail.com', area: 'Gachibowli', service_area: 'Gachibowli, Financial District', cuisine: 'South Indian', platform: 'Yes — both platforms', message: 'Zomato charges 25%. Cannot sustain.', submitted_at: ago(20) },
-      { type: 'User', name: 'Deepa Pillai', phone: '+91 99001 23478', email: 'deepa@google.com', area: 'Nanakramguda', platform: 'Swiggy only', frequency: 'Daily', fav_restaurants: 'Chai Stop', message: '', submitted_at: ago(24) },
+      { type: 'User', name: 'Vikram Nair', phone: '+91 93000 76541', email: 'vikram@microsoft.com', area: 'Gachibowli', platform: 'Multiple delivery apps', frequency: 'Daily', fav_restaurants: 'Bay Leaf, Ulavacharu', message: 'Please launch ASAP!', submitted_at: ago(18) },
+      { type: 'Restaurant', restaurant_name: 'Bay Leaf Coastal', owner_name: 'Venkat Rao', phone: '+91 98001 66543', email: 'bayleaf@gmail.com', area: 'Gachibowli', service_area: 'Gachibowli, Financial District', cuisine: 'South Indian', platform: 'Yes, on multiple apps', message: 'The platform charges 25%. Cannot sustain.', submitted_at: ago(20) },
+      { type: 'User', name: 'Deepa Pillai', phone: '+91 99001 23478', email: 'deepa@google.com', area: 'Nanakramguda', platform: 'One delivery app', frequency: 'Daily', fav_restaurants: 'Chai Stop', message: '', submitted_at: ago(24) },
     ];
     var existing = JSON.parse(localStorage.getItem(ENTRIES_KEY) || '[]').filter(function(e) { return !e._demo; });
     demo.forEach(function(d) { d._demo = true; });
