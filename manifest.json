@@ -1,0 +1,27 @@
+{
+  "name": "Fudzo",
+  "short_name": "Fudzo",
+  "description": "Counter prices. Always. Food delivery at real restaurant prices.",
+  "start_url": "/fudzo-app.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FFFBF4",
+  "theme_color": "#C8290A",
+  "orientation": "portrait-primary",
+  "lang": "en-IN",
+  "categories": ["food", "shopping"],
+  "icons": [
+    {
+      "src": "/fudzo-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/fudzo-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
