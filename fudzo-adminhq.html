@@ -1,0 +1,1715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fudzo Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,900;1,9..144,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;}
+:root{
+  --red:#C8290A;--red2:#A52008;--rsft:#FEF0EC;--rmid:#F5C4BB;
+  --amb:#D97706;--amb2:#B45309;--asft:#FEF3C7;--amid:#FDE68A;
+  --grn:#15803D;--gsft:#F0FDF4;--gmid:#86EFAC;
+  --blue:#1D4ED8;--bsft:#EFF6FF;--bmid:#BFDBFE;
+  --purple:#7C3AED;--psft:#F5F3FF;--pmid:#DDD6FE;
+  --teal:#0F766E;--tsft:#F0FDFA;--tmid:#99F6E4;
+  --bg:#F8F4EF;--bg2:#FFFBF4;--bg3:#F3EDE4;--bg4:#EDE5D8;
+  --card:#FFFFFF;--card2:#FDFAF5;--card3:#FAF5EE;
+  --b1:rgba(0,0,0,0.07);--b2:rgba(0,0,0,0.12);
+  --t1:#1C1917;--t2:#44403C;--t3:#78716C;--t4:#A8A09A;
+  --f1:'DM Sans',sans-serif;--f2:'Fraunces',serif;
+  --sw:220px;
+}
+html,body{width:100%;height:100%;background:var(--bg);font-family:var(--f1);color:var(--t1);overflow:hidden;}
+#shell{display:flex;width:100%;height:100%;}
+
+/* ── SIDEBAR ── */
+#sidebar{
+  width:var(--sw);min-height:100vh;flex-shrink:0;
+  background:var(--bg2);border-right:1px solid var(--b1);
+  display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:none;
+}
+#sidebar::-webkit-scrollbar{display:none;}
+.sb-brand{padding:18px 16px 14px;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:10px;}
+.sb-brand-logo{height:26px;object-fit:contain;}
+.sb-brand-tag{font-size:8px;font-weight:800;letter-spacing:2px;text-transform:uppercase;background:var(--rsft);color:var(--red);border:1px solid var(--rmid);padding:2px 8px;border-radius:50px;}
+.sb-live{padding:10px 16px 12px;border-bottom:1px solid var(--b1);background:var(--bg3);}
+.sb-live-row{display:flex;align-items:center;justify-content:space-between;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--grn);animation:pulse-live 1.5s ease-in-out infinite;}
+@keyframes pulse-live{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(21,128,61,0.4)}50%{opacity:.6;box-shadow:0 0 0 5px rgba(21,128,61,0)}}
+.live-lbl{font-size:10px;font-weight:700;color:var(--grn);letter-spacing:.5px;}
+.live-time{font-size:10px;color:var(--t3);font-weight:500;} 
+.live-stat{font-size:11px;color:var(--t2);margin-top:5px;}
+.live-stat span{color:var(--grn);font-weight:700;}
+nav{flex:1;padding:10px 8px;}
+.nav-sec{font-size:8px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--t3);padding:10px 8px 5px;margin-top:6px;}
+.ni{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:9px;cursor:pointer;font-size:12px;font-weight:500;color:var(--t3);transition:all .15s;margin-bottom:1px;position:relative;}
+.ni:hover{background:var(--bg3);color:var(--t1);}
+.ni.on{background:var(--rsft);color:var(--red);font-weight:600;border:1px solid var(--rmid);}
+.ni-ico{width:16px;text-align:center;font-size:13px;flex-shrink:0;opacity:.7;}
+.ni.on .ni-ico{opacity:1;}
+.ni-badge{position:absolute;right:10px;background:var(--red);color:#fff;font-size:8px;font-weight:800;padding:1px 6px;border-radius:50px;}
+.ni-badge.g{background:var(--grn);}
+.ni-badge.a{background:var(--amb);}
+.sb-user{margin:10px 8px 14px;padding:11px 12px;border-radius:11px;background:var(--card2);border:1px solid var(--b1);display:flex;align-items:center;gap:9px;}
+.sb-av{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--red),var(--red2));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;}
+.sb-uname{font-size:12px;font-weight:600;color:var(--t1);}
+.sb-urole{font-size:10px;color:var(--t3);}
+
+/* ── MAIN ── */
+#main{flex:1;overflow-y:auto;overflow-x:hidden;background:var(--bg);scrollbar-width:thin;scrollbar-color:var(--bg4) transparent;}
+#main::-webkit-scrollbar{width:4px;}
+#main::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:50px;}
+
+/* ── TOPBAR ── */
+.topbar{position:sticky;top:0;z-index:100;background:rgba(248,244,239,0.96);backdrop-filter:blur(20px);border-bottom:1px solid var(--b1);padding:0 24px;height:54px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.tb-l{display:flex;align-items:center;gap:10px;}
+.tb-title{font-family:var(--f2);font-size:17px;font-weight:700;color:var(--t1);}
+.tb-r{display:flex;align-items:center;gap:8px;}
+.tb-btn{padding:6px 13px;border-radius:8px;border:1px solid var(--b1);background:var(--card);font-family:var(--f1);font-size:11px;font-weight:600;color:var(--t2);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px;}
+.tb-btn:hover{border-color:var(--b2);color:var(--t1);}
+.tb-btn.pri{background:var(--red);color:#fff;border-color:var(--red);}
+.tb-btn.pri:hover{background:var(--red2);}
+.lpill{display:flex;align-items:center;gap:5px;padding:5px 11px;border-radius:50px;background:rgba(21,128,61,0.08);border:1px solid rgba(21,128,61,0.2);font-size:10px;font-weight:700;color:var(--grn);}
+
+/* ── VIEWS ── */
+.view{display:none;padding:22px;}
+.view.on{display:block;}
+
+/* ── GRID ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;margin-bottom:14px;}
+.g6{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px;}
+.g32{display:grid;grid-template-columns:3fr 2fr;gap:14px;margin-bottom:14px;}
+.g23{display:grid;grid-template-columns:2fr 3fr;gap:14px;margin-bottom:14px;}
+.gfull{margin-bottom:14px;}
+@media(max-width:1200px){.g4{grid-template-columns:1fr 1fr}.g5,.g6{grid-template-columns:1fr 1fr 1fr}}
+@media(max-width:900px){.g3{grid-template-columns:1fr 1fr}.g32,.g23{grid-template-columns:1fr}}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--b1);border-radius:13px;padding:16px;}
+.card-t{font-size:12px;font-weight:700;color:var(--t2);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+.card-t .ct-s{font-size:10px;font-weight:400;color:var(--t3);}
+.card-t .ct-a{font-size:10px;font-weight:600;color:var(--red);cursor:pointer;}
+
+/* ── KPI CARDS ── */
+.kpi{background:var(--card);border:1px solid var(--b1);border-radius:13px;padding:16px 18px;position:relative;overflow:hidden;}
+.kpi::before{content:'';position:absolute;width:100px;height:100px;border-radius:50%;right:-20px;top:-20px;opacity:.06;}
+.kpi.r::before{background:var(--red);}
+.kpi.g::before{background:var(--grn);}
+.kpi.a::before{background:var(--amb);}
+.kpi.b::before{background:var(--blue);}
+.kpi.p::before{background:var(--purple);}
+.kpi.t::before{background:var(--teal);}
+.kpi-lbl{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3);margin-bottom:6px;}
+.kpi-val{font-family:var(--f2);font-size:26px;font-weight:900;line-height:1;margin-bottom:5px;}
+.kpi.r .kpi-val{color:var(--red);}
+.kpi.g .kpi-val{color:var(--grn);}
+.kpi.a .kpi-val{color:var(--amb);}
+.kpi.b .kpi-val{color:var(--blue);}
+.kpi.p .kpi-val{color:var(--purple);}
+.kpi.t .kpi-val{color:var(--teal);}
+.kpi-sub{font-size:10px;color:var(--t3);}
+.kpi-trend{position:absolute;right:14px;bottom:14px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:50px;}
+.kpi-trend.up{background:var(--gsft);color:var(--grn);border:1px solid var(--gmid);}
+.kpi-trend.dn{background:var(--rsft);color:var(--red);border:1px solid var(--rmid);}
+.kpi-spark{position:absolute;bottom:0;left:0;right:0;height:40px;opacity:.25;}
+
+/* ── TABLES ── */
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--t4);padding:8px 12px;text-align:left;border-bottom:1px solid var(--b1);white-space:nowrap;}
+.tbl td{font-size:11px;color:var(--t2);padding:10px 12px;border-bottom:1px solid var(--b1);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:var(--card2);}
+.tbl td.hi{font-weight:700;color:var(--t1);}
+.tbl td.gn{color:var(--grn);font-weight:700;}
+.tbl td.rd{color:var(--red);}
+.tbl td.am{color:var(--amb);}
+
+/* ── BAR ROWS ── */
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.bar-lbl{font-size:11px;color:var(--t2);width:110px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bar-track{flex:1;height:6px;border-radius:50px;background:var(--b1);overflow:hidden;}
+.bar-fill{height:100%;border-radius:50px;transition:width .8s ease;}
+.bar-fill.r{background:linear-gradient(90deg,var(--red),#FF6B47);}
+.bar-fill.g{background:linear-gradient(90deg,var(--grn),var(--grn));}
+.bar-fill.a{background:linear-gradient(90deg,var(--amb),#FCD34D);}
+.bar-fill.b{background:linear-gradient(90deg,var(--blue),var(--blue));}
+.bar-fill.p{background:linear-gradient(90deg,var(--purple),var(--purple));}
+.bar-val{font-size:10px;font-weight:700;color:var(--t3);width:44px;text-align:right;flex-shrink:0;}
+
+/* ── CHART CONTAINERS ── */
+.cw{position:relative;height:180px;width:100%;}
+.cw.sm{height:140px;}
+.cw.md{height:200px;}
+.cw.lg{height:240px;}
+.cw.xl{height:280px;}
+
+/* ── STATUS BADGES ── */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:50px;font-size:9px;font-weight:700;}
+.badge.grn{background:var(--gsft);color:var(--grn);border:1px solid var(--gmid);}
+.badge.red{background:var(--rsft);color:var(--red);border:1px solid var(--rmid);}
+.badge.amb{background:var(--asft);color:var(--amb2);border:1px solid var(--amid);}
+.badge.blue{background:var(--bsft);color:var(--blue);border:1px solid var(--bmid);}
+.badge.purp{background:var(--psft);color:var(--purple);border:1px solid var(--pmid);}
+
+/* ── RANK / LIST ITEMS ── */
+.list-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:10px;background:var(--card2);border:1px solid var(--b1);margin-bottom:7px;transition:background .15s;}
+.list-item:hover{background:var(--bg3);}
+.li-rank{width:22px;height:22px;border-radius:7px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--t3);flex-shrink:0;}
+.li-rank.gold{background:rgba(217,119,6,0.15);color:var(--amb);}
+.li-rank.silver{background:rgba(148,163,184,0.15);color:#94A3B8;}
+.li-rank.bronze{background:rgba(180,83,9,0.15);color:#B45309;}
+.li-body{flex:1;}
+.li-name{font-size:12px;font-weight:700;color:var(--t1);margin-bottom:1px;}
+.li-sub{font-size:10px;color:var(--t3);}
+.li-val{font-family:var(--f2);font-size:13px;font-weight:700;color:var(--t1);}
+
+/* ── ALERT ROWS ── */
+.alert-row{display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:10px;margin-bottom:7px;cursor:pointer;transition:all .15s;}
+.alert-row.crit{background:var(--rsft);border:1px solid var(--rmid);}
+.alert-row.warn{background:var(--asft);border:1px solid var(--amid);}
+.alert-row.info{background:var(--bsft);border:1px solid var(--bmid);}
+.alert-row.succ{background:var(--gsft);border:1px solid var(--gmid);}
+.alert-row:hover{filter:brightness(1.15);}
+.ar-ico{font-size:15px;flex-shrink:0;}
+.ar-body{flex:1;}
+.ar-title{font-size:11px;font-weight:700;margin-bottom:1px;}
+.ar-title.crit{color:var(--red);}
+.ar-title.warn{color:var(--amb2);}
+.ar-title.info{color:var(--blue);}
+.ar-title.succ{color:var(--grn);}
+.ar-sub{font-size:10px;color:var(--t3);}
+.ar-time{font-size:9px;color:var(--t4);flex-shrink:0;}
+
+/* ── MAP ── */
+.map-bg{background:linear-gradient(155deg,#E8F5E8,#EEF8EE);border-radius:12px;position:relative;overflow:hidden;border:1px solid var(--gmid);}
+.map-grid-overlay{position:absolute;inset:0;background-image:radial-gradient(rgba(0,0,0,0.04) 1px,transparent 1px);background-size:24px 24px;}
+
+/* ── HEATMAP ── */
+.hm-wrap{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.hm-cell{height:22px;border-radius:4px;cursor:pointer;transition:opacity .15s;}
+.hm-cell:hover{opacity:.7;}
+.l0{background:rgba(255,255,255,0.04);}
+.l1{background:rgba(200,41,10,0.2);}
+.l2{background:rgba(200,41,10,0.4);}
+.l3{background:rgba(200,41,10,0.6);}
+.l4{background:rgba(200,41,10,0.8);}
+.l5{background:rgba(200,41,10,1);}
+
+/* ── FUNNEL ── */
+.funnel-step{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.fs-bar-wrap{flex:1;}
+.fs-lbl{font-size:11px;color:var(--t2);margin-bottom:4px;}
+.fs-bar{height:28px;border-radius:6px;display:flex;align-items:center;padding:0 10px;font-size:11px;font-weight:700;color:#fff;position:relative;}
+.fs-pct{font-size:10px;color:var(--t3);width:38px;text-align:right;flex-shrink:0;}
+
+/* ── TOGGLE ── */
+.tog{position:relative;width:36px;height:20px;cursor:pointer;}
+.tog input{opacity:0;position:absolute;width:0;height:0;}
+.tog-track{position:absolute;inset:0;border-radius:50px;background:var(--b1);transition:background .2s;}
+.tog-thumb{position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.3);}
+.tog input:checked~.tog-track{background:var(--grn);}
+.tog input:checked~.tog-thumb{transform:translateX(16px);}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--t1);color:#fff;border:1px solid var(--b2);padding:11px 18px;border-radius:11px;font-size:12px;font-weight:600;z-index:9999;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;max-width:320px;}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast.g{background:var(--grn);color:#fff;border:none;}
+.toast.r{background:var(--red);color:#fff;border:none;}
+.toast.a{background:var(--amb);color:#fff;border:none;}
+
+/* ── MODAL ── */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(6px);z-index:1000;display:none;align-items:center;justify-content:center;}
+.modal-ov.open{display:flex;}
+.modal-box{background:var(--card);border:1px solid var(--b1);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.12);padding:24px;max-width:460px;width:90%;max-height:80vh;overflow-y:auto;}
+.modal-ttl{font-family:var(--f2);font-size:19px;font-weight:700;color:var(--t1);margin-bottom:6px;}
+.modal-sub{font-size:13px;color:var(--t3);margin-bottom:18px;line-height:1.6;}
+.modal-btns{display:flex;gap:9px;margin-top:18px;}
+.mb{flex:1;padding:11px;border-radius:10px;border:none;font-family:var(--f1);font-size:13px;font-weight:600;cursor:pointer;}
+.mb.pri{background:var(--red);color:#fff;}
+.mb.ghost{background:var(--card2);color:var(--t2);border:1px solid var(--b1);}
+
+/* ── SECTION DIVIDERS ── */
+.sec-hdr{font-size:13px;font-weight:700;color:var(--t1);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+.sec-hdr .sh-a{font-size:10px;font-weight:600;color:var(--red);cursor:pointer;}
+.sec-hdr .sh-s{font-size:10px;color:var(--t3);}
+.divider{height:1px;background:var(--b1);margin:18px 0;}
+
+/* ── PROGRESS RING ── */
+.prog-ring-wrap{position:relative;display:inline-flex;align-items:center;justify-content:center;}
+.prog-ring-label{position:absolute;text-align:center;}
+
+/* ── NUMBER INPUT ── */
+.num-inp{background:var(--bg3);border:1px solid var(--b1);border-radius:8px;padding:8px 12px;font-family:var(--f1);font-size:12px;color:var(--t1);outline:none;width:100%;}
+.num-inp:focus{border-color:rgba(200,41,10,0.4);}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<div class="modal-ov" id="modal"><div class="modal-box"><div class="modal-ttl" id="mtitle"></div><div class="modal-sub" id="msub"></div><div id="mbody"></div><div class="modal-btns"><button class="mb ghost" onclick="closeModal()">Cancel</button><button class="mb pri" id="mconfirm" onclick="closeModal()">Confirm</button></div></div></div>
+
+<div id="shell">
+<!-- ═══════════════════════════════ SIDEBAR ═══════════════════════════════ -->
+<div id="sidebar">
+  <div class="sb-brand">
+    <img class="sb-brand-logo" src="./fudzo-logo.png" alt="Fudzo" onerror="this.style.display='none'">
+    <span class="sb-brand-tag">HQ</span>
+  </div>
+  <div class="sb-live">
+    <div class="sb-live-row"><div style="display:flex;align-items:center;gap:5px"><div class="live-dot"></div><span class="live-lbl">LIVE</span></div><span class="live-time" id="hq-clock">--:--:--</span></div>
+    <div class="live-stat">Active users: <span id="live-users">247</span> &nbsp;·&nbsp; Orders now: <span id="live-orders">34</span></div>
+  </div>
+  <nav>
+    <div class="nav-sec">Command</div>
+    <div class="ni on" onclick="sv('overview')"><span class="ni-ico">⬡</span><span>Platform Overview</span></div>
+    <div class="ni" onclick="sv('live')"><span class="ni-ico">◉</span><span>Live Operations</span><span class="ni-badge g" id="live-badge">34</span></div>
+    <div class="ni" onclick="sv('alerts')"><span class="ni-ico">△</span><span>Alerts &amp; Flags</span><span class="ni-badge" id="alert-badge">7</span></div>
+    <div class="nav-sec">Revenue</div>
+    <div class="ni" onclick="sv('revenue')"><span class="ni-ico">₹</span><span>Revenue &amp; P&amp;L</span></div>
+    <div class="ni" onclick="sv('leakage')"><span class="ni-ico">⚠</span><span>Leakage Detector</span><span class="ni-badge a">3</span></div>
+    <div class="ni" onclick="sv('subscriptions')"><span class="ni-ico">⚡</span><span>Subscriptions</span></div>
+    <div class="nav-sec">Users</div>
+    <div class="ni" onclick="sv('users')"><span class="ni-ico">◎</span><span>User Management</span></div>
+    <div class="ni" onclick="sv('abuse')"><span class="ni-ico">🛡</span><span>Abuse Detection</span><span class="ni-badge">2</span></div>
+    <div class="ni" onclick="sv('cohorts')"><span class="ni-ico">◈</span><span>Cohort Analysis</span></div>
+    <div class="nav-sec">Supply</div>
+    <div class="ni" onclick="sv('restaurants')"><span class="ni-ico">▣</span><span>Restaurants</span></div>
+    <div class="ni" onclick="sv('riders')"><span class="ni-ico">◷</span><span>Rider Network</span></div>
+    <div class="ni" onclick="sv('areas')"><span class="ni-ico">⬡</span><span>Area Intelligence</span></div>
+    <div class="nav-sec">Quality</div>
+    <div class="ni" onclick="sv('complaints')"><span class="ni-ico">⚑</span><span>Complaints Hub</span></div>
+    <div class="ni" onclick="sv('quality')"><span class="ni-ico">◈</span><span>Quality Scores</span></div>
+    <div class="nav-sec">Platform</div>
+    <div class="ni" onclick="sv('growth')"><span class="ni-ico">↗</span><span>Growth Engine</span></div>
+    <div class="ni" onclick="sv('config')"><span class="ni-ico">⚙</span><span>Platform Config</span></div>
+  </nav>
+  <div class="sb-user"><div class="sb-av">S</div><div><div class="sb-uname">Suresh Kumar</div><div class="sb-urole">Super Admin · Fudzo HQ</div></div></div>
+</div>
+
+<!-- ═══════════════════════════════ MAIN ═══════════════════════════════ -->
+<div id="main">
+
+<!-- ════════════════════════════════════════════
+     VIEW: PLATFORM OVERVIEW
+════════════════════════════════════════════ -->
+<div class="view on" id="v-overview">
+  <div class="topbar">
+    <div class="tb-l"><div class="tb-title">Platform Overview</div><div class="lpill"><div class="live-dot"></div>Live</div></div>
+    <div class="tb-r">
+      <select style="padding:5px 10px;border-radius:7px;border:1px solid var(--b1);background:var(--card);font-family:var(--f1);font-size:11px;color:var(--t2);outline:none;cursor:pointer" onchange="toast('Date range updated')">
+        <option>Today</option><option>Last 7 days</option><option>Last 30 days</option><option>This Month</option>
+      </select>
+      <div class="tb-btn" onclick="toast('Exporting PDF report...')">↓ Export</div>
+      <div class="tb-btn pri" onclick="toast('Sending daily digest to team','g')">📧 Digest</div>
+    </div>
+  </div>
+  <div style="padding:22px">
+    <!-- Health Score Banner -->
+    <div style="background:linear-gradient(135deg,var(--rsft),var(--asft));border:1px solid var(--rmid);border-radius:14px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between">
+      <div><div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:3px">PLATFORM HEALTH SCORE</div><div style="font-family:var(--f2);font-size:38px;font-weight:900;color:var(--t1);letter-spacing:-1px">87<span style="font-size:20px;color:var(--t3)">/100</span></div><div style="font-size:11px;color:var(--t3);margin-top:2px">Good · 4 items need attention</div></div>
+      <div style="display:flex;gap:14px">
+        <div style="text-align:center"><div style="font-family:var(--f2);font-size:22px;font-weight:700;color:var(--grn)">247</div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3)">Live Users</div></div>
+        <div style="text-align:center"><div style="font-family:var(--f2);font-size:22px;font-weight:700;color:var(--amb)">34</div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3)">Live Orders</div></div>
+        <div style="text-align:center"><div style="font-family:var(--f2);font-size:22px;font-weight:700;color:var(--blue)">12</div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3)">Active Riders</div></div>
+        <div style="text-align:center"><div style="font-family:var(--f2);font-size:22px;font-weight:700;color:var(--purple)">28</div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3)">Online Restaurants</div></div>
+      </div>
+    </div>
+    <!-- Top KPIs -->
+    <div class="g6">
+      <div class="kpi r"><div class="kpi-lbl">Fudzo Revenue</div><div class="kpi-val">₹8.4L</div><div class="kpi-sub">This month</div><div class="kpi-trend up">+22%</div></div>
+      <div class="kpi g"><div class="kpi-lbl">Total GMV</div><div class="kpi-val">₹1.8Cr</div><div class="kpi-sub">All orders MTD</div><div class="kpi-trend up">+18%</div></div>
+      <div class="kpi a"><div class="kpi-lbl">Active Users</div><div class="kpi-val">4,287</div><div class="kpi-sub">Ordered this month</div><div class="kpi-trend up">+12%</div></div>
+      <div class="kpi b"><div class="kpi-lbl">Active Restaurants</div><div class="kpi-val">63</div><div class="kpi-sub">On platform</div><div class="kpi-trend up">+8</div></div>
+      <div class="kpi p"><div class="kpi-lbl">Total Orders MTD</div><div class="kpi-val">22,847</div><div class="kpi-sub">Avg 761/day</div><div class="kpi-trend up">+15%</div></div>
+      <div class="kpi t"><div class="kpi-lbl">User Savings MTD</div><div class="kpi-val">₹42L</div><div class="kpi-sub">vs other apps</div><div class="kpi-trend up">+19%</div></div>
+    </div>
+    <div class="g32">
+      <div class="card"><div class="card-t">Revenue Trend — Last 30 Days <span class="ct-s">Subscription + Other</span></div><div class="cw lg"><canvas id="ov-revenue"></canvas></div></div>
+      <div class="card"><div class="card-t">Order Volume — By Hour <span class="ct-s">Today</span></div><div class="cw lg"><canvas id="ov-hourly"></canvas></div></div>
+    </div>
+    <div class="g3">
+      <div class="card"><div class="card-t">GMV by Area <span class="ct-s">This month</span></div><div class="cw"><canvas id="ov-area"></canvas></div></div>
+      <div class="card"><div class="card-t">User Plan Split <span class="ct-s">Active subscribers</span></div><div class="cw"><canvas id="ov-plans"></canvas></div></div>
+      <div class="card"><div class="card-t">Order Status Live</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 11px;background:rgba(200,41,10,0.08);border-radius:9px;border:1px solid rgba(200,41,10,0.2)"><span style="font-size:11px;color:var(--red);font-weight:600">Pending Acceptance</span><span style="font-family:var(--f2);font-size:18px;color:var(--red)">8</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 11px;background:rgba(29,78,216,0.08);border-radius:9px;border:1px solid rgba(29,78,216,0.2)"><span style="font-size:11px;color:var(--blue);font-weight:600">In Preparation</span><span style="font-family:var(--f2);font-size:18px;color:var(--blue)">14</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 11px;background:rgba(217,119,6,0.08);border-radius:9px;border:1px solid rgba(217,119,6,0.2)"><span style="font-size:11px;color:var(--amb);font-weight:600">On the Way</span><span style="font-family:var(--f2);font-size:18px;color:var(--amb)">12</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 11px;background:rgba(21,128,61,0.08);border-radius:9px;border:1px solid rgba(21,128,61,0.2)"><span style="font-size:11px;color:var(--grn);font-weight:600">Delivered Today</span><span style="font-family:var(--f2);font-size:18px;color:var(--grn)">587</span></div>
+        </div>
+      </div>
+    </div>
+    <!-- Unique: Flywheel Health -->
+    <div class="card gfull">
+      <div class="card-t">Platform Flywheel Health <span class="ct-s">Key growth loops — updated daily</span></div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px">
+        <div style="text-align:center;padding:14px 10px;background:var(--card2);border-radius:11px;border:1px solid var(--b1)"><div style="font-family:var(--f2);font-size:24px;font-weight:700;color:var(--grn);margin-bottom:4px">64%</div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3)">User Retention</div><div class="bar-track" style="margin-top:8px"><div class="bar-fill g" style="width:64%"></div></div></div>
+        <div style="text-align:center;padding:14px 10px;background:var(--card2);border-radius:11px;border:1px solid var(--b1)"><div style="font-family:var(--f2);font-size:24px;font-weight:700;color:var(--amb);margin-bottom:4px">73%</div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3)">Restaurant Retention</div><div class="bar-track" style="margin-top:8px"><div class="bar-fill a" style="width:73%"></div></div></div>
+        <div style="text-align:center;padding:14px 10px;background:var(--card2);border-radius:11px;border:1px solid var(--b1)"><div style="font-family:var(--f2);font-size:24px;font-weight:700;color:var(--blue);margin-bottom:4px">88%</div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3)">Order Fulfilment</div><div class="bar-track" style="margin-top:8px"><div class="bar-fill b" style="width:88%"></div></div></div>
+        <div style="text-align:center;padding:14px 10px;background:var(--card2);border-radius:11px;border:1px solid var(--b1)"><div style="font-family:var(--f2);font-size:24px;font-weight:700;color:var(--purple);margin-bottom:4px">4.7</div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3)">Avg Platform Rating</div><div class="bar-track" style="margin-top:8px"><div class="bar-fill p" style="width:94%"></div></div></div>
+        <div style="text-align:center;padding:14px 10px;background:var(--card2);border-radius:11px;border:1px solid var(--b1)"><div style="font-family:var(--f2);font-size:24px;font-weight:700;color:var(--teal);margin-bottom:4px">2.8</div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3)">Orders / User / Mo</div><div class="bar-track" style="margin-top:8px"><div class="bar-fill" style="width:56%;background:linear-gradient(90deg,var(--teal),var(--teal))"></div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ VIEW: LIVE OPERATIONS ════════════════════ -->
+<div class="view" id="v-live">
+  <div class="topbar"><div class="tb-l"><div class="tb-title">Live Operations</div><div class="lpill"><div class="live-dot"></div>Realtime</div></div><div class="tb-r"><div class="tb-btn" onclick="toast('Broadcast sent to all restaurants','g')">📢 Broadcast</div><div class="tb-btn pri" onclick="showModal('Emergency Pause','Pause all new order acceptance across the platform for a set duration. Existing orders continue.','Pause Platform','r')">⏸ Emergency Pause</div></div></div>
+  <div style="padding:22px">
+    <div class="g4">
+      <div class="kpi r"><div class="kpi-lbl">Live Active Users</div><div class="kpi-val" id="lo-users">247</div><div class="kpi-sub">On app right now</div></div>
+      <div class="kpi a"><div class="kpi-lbl">Orders In Flight</div><div class="kpi-val">34</div><div class="kpi-sub">Across all stages</div></div>
+      <div class="kpi g"><div class="kpi-lbl">Riders Active</div><div class="kpi-val">12</div><div class="kpi-sub">8 delivering · 4 free</div></div>
+      <div class="kpi b"><div class="kpi-lbl">Avg Accept Time</div><div class="kpi-val">1m 24s</div><div class="kpi-sub">Last 30 orders</div></div>
+    </div>
+    <div class="g32">
+      <div class="card">
+        <div class="card-t">All Live Orders <span class="ct-s">Real-time feed</span><span class="ct-a" onclick="toast('Filters applied')">Filter</span></div>
+        <table class="tbl">
+          <thead><tr><th>Order ID</th><th>User</th><th>Restaurant</th><th>Items</th><th>Value</th><th>Stage</th><th>Time</th><th>Action</th></tr></thead>
+          <tbody id="live-orders-table"></tbody>
+        </table>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-t">Platform Live Map <span class="ct-s">Gachibowli zone</span></div>
+          <div class="map-bg" style="height:200px">
+            <div class="map-grid-overlay"></div>
+            <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 400 200" fill="none">
+              <line x1="0" y1="80" x2="400" y2="80" stroke="rgba(0,0,0,0.06)" stroke-width="2"/>
+              <line x1="0" y1="130" x2="400" y2="130" stroke="rgba(0,0,0,0.06)" stroke-width="2"/>
+              <line x1="140" y1="0" x2="140" y2="200" stroke="rgba(0,0,0,0.06)" stroke-width="2"/>
+              <line x1="260" y1="0" x2="260" y2="200" stroke="rgba(0,0,0,0.06)" stroke-width="2"/>
+              <circle cx="200" cy="100" r="60" stroke="rgba(200,41,10,0.15)" stroke-width="1" fill="rgba(200,41,10,0.03)"/>
+              <circle cx="200" cy="100" r="90" stroke="rgba(200,41,10,0.08)" stroke-width="1" fill="none"/>
+            </svg>
+            <!-- Restaurant dots -->
+            <div style="position:absolute;left:42%;top:45%;width:10px;height:10px;border-radius:50%;background:var(--amb);box-shadow:0 0 8px rgba(217,119,6,0.6)"></div>
+            <div style="position:absolute;left:54%;top:38%;width:10px;height:10px;border-radius:50%;background:var(--amb);box-shadow:0 0 8px rgba(217,119,6,0.6)"></div>
+            <div style="position:absolute;left:36%;top:58%;width:10px;height:10px;border-radius:50%;background:var(--amb);box-shadow:0 0 8px rgba(217,119,6,0.6)"></div>
+            <!-- Rider dots -->
+            <div id="lr1" style="position:absolute;left:35%;top:42%;width:12px;height:12px;border-radius:50%;background:var(--grn);box-shadow:0 0 10px rgba(21,128,61,0.7);transition:left 4s,top 4s"></div>
+            <div id="lr2" style="position:absolute;left:58%;top:35%;width:12px;height:12px;border-radius:50%;background:var(--grn);box-shadow:0 0 10px rgba(21,128,61,0.7);transition:left 4s,top 4s"></div>
+            <div id="lr3" style="position:absolute;left:48%;top:55%;width:12px;height:12px;border-radius:50%;background:var(--blue);box-shadow:0 0 8px rgba(29,78,216,0.5)"></div>
+            <div style="position:absolute;bottom:7px;right:9px;font-size:9px;font-weight:700;color:rgba(255,255,255,0.3)">LIVE MAP</div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-t">Last 2 Hours — Orders/Minute</div>
+          <div class="cw sm"><canvas id="lo-rate"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-t">Stage Breakdown</div>
+          <div class="cw sm"><canvas id="lo-stages"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ VIEW: ALERTS ════════════════════ -->
+<div class="view" id="v-alerts">
+  <div class="topbar"><div class="tb-l"><div class="tb-title">Alerts &amp; Flags</div></div><div class="tb-r"><div class="tb-btn" onclick="toast('All resolved alerts archived')">Archive Resolved</div><div class="tb-btn pri" onclick="toast('Alert rules updated','g')">⚙ Rules</div></div></div>
+  <div style="padding:22px">
+    <div class="g4">
+      <div class="kpi r"><div class="kpi-lbl">Critical</div><div class="kpi-val">2</div><div class="kpi-sub">Need immediate action</div></div>
+      <div class="kpi a"><div class="kpi-lbl">Warnings</div><div class="kpi-val">5</div><div class="kpi-sub">Monitor closely</div></div>
+      <div class="kpi b"><div class="kpi-lbl">Info</div><div class="kpi-val">12</div><div class="kpi-sub">FYI items</div></div>
+      <div class="kpi g"><div class="kpi-lbl">Resolved Today</div><div class="kpi-val">8</div><div class="kpi-sub">Last 24 hours</div></div>
+    </div>
+    <div class="g2">
+      <div>
+        <div class="sec-hdr">Critical <span class="sh-s">Needs action now</span></div>
+        <div class="alert-row crit" onclick="showModal('Rider #R-042 Not Responding','This rider accepted order #FDZ-8821 18 minutes ago and has not updated location since. Customer is waiting. Auto-reassignment recommended.','Reassign Order','r')">
+          <div class="ar-ico">🚨</div>
+          <div class="ar-body"><div class="ar-title crit">Rider R-042 unresponsive — 18 mins</div><div class="ar-sub">Order #FDZ-8821 · Arjun M. waiting · Last location: HITEC City Rd</div></div>
+          <div class="ar-time">Just now</div>
+        </div>
+        <div class="alert-row crit" onclick="showModal('Payment Gateway Latency','UPI gateway response time has exceeded 8s average in the last 6 minutes. 3 payments may have failed silently. Review required.','Investigate','r')">
+          <div class="ar-ico">💳</div>
+          <div class="ar-body"><div class="ar-title crit">UPI gateway latency spike — 8.2s avg</div><div class="ar-sub">3 possible failed payments in last 6 mins</div></div>
+          <div class="ar-time">4 min ago</div>
+        </div>
+        <div class="sec-hdr" style="margin-top:18px">Warnings</div>
+        <div class="alert-row warn" onclick="toast('Restaurant Bay Leaf flagged for review')">
+          <div class="ar-ico">⚠️</div>
+          <div class="ar-body"><div class="ar-title warn">Bay Leaf Coastal — 4 complaints in 2 hours</div><div class="ar-sub">Pattern: wrong item delivered · 3 refunds processed</div></div>
+          <div class="ar-time">12 min ago</div>
+        </div>
+        <div class="alert-row warn" onclick="toast('User flagged for review')">
+          <div class="ar-ico">👤</div>
+          <div class="ar-body"><div class="ar-title warn">User abuse suspected — Priya S.</div><div class="ar-sub">6 refund claims in 14 days · Pattern matches abuse model</div></div>
+          <div class="ar-time">22 min ago</div>
+        </div>
+        <div class="alert-row warn" onclick="toast('Rider supply noted')">
+          <div class="ar-ico">🛵</div>
+          <div class="ar-body"><div class="ar-title warn">Rider supply low — Nanakramguda area</div><div class="ar-sub">Only 1 rider for 6 pending orders · Avg ETA +14 mins</div></div>
+          <div class="ar-time">31 min ago</div>
+        </div>
+        <div class="sec-hdr" style="margin-top:18px">Info</div>
+        <div class="alert-row info" onclick="toast('Report opened')">
+          <div class="ar-ico">📈</div>
+          <div class="ar-body"><div class="ar-title info">Daily GMV target hit at 6:42 PM — ahead of schedule</div><div class="ar-sub">₹58,400 of ₹55,000 target · 2h 18m early</div></div>
+          <div class="ar-time">1h ago</div>
+        </div>
+        <div class="alert-row succ" onclick="toast('New restaurant onboarded')">
+          <div class="ar-ico">🍽️</div>
+          <div class="ar-body"><div class="ar-title succ">New restaurant onboarded — Spice Route</div><div class="ar-sub">Kondapur area · Growth plan · Goes live tomorrow</div></div>
+          <div class="ar-time">2h ago</div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-t">Alert Volume — Last 7 Days</div>
+          <div class="cw"><canvas id="al-volume"></canvas></div>
+        </div>
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-t">Alert Categories</div>
+          <div class="bar-row"><span class="bar-lbl">Rider issues</span><div class="bar-track"><div class="bar-fill r" style="width:68%"></div></div><span class="bar-val">34</span></div>
+          <div class="bar-row"><span class="bar-lbl">Payment</span><div class="bar-track"><div class="bar-fill a" style="width:44%"></div></div><span class="bar-val">22</span></div>
+          <div class="bar-row"><span class="bar-lbl">User abuse</span><div class="bar-track"><div class="bar-fill r" style="width:30%"></div></div><span class="bar-val">15</span></div>
+          <div class="bar-row"><span class="bar-lbl">Restaurant</span><div class="bar-track"><div class="bar-fill a" style="width:26%"></div></div><span class="bar-val">13</span></div>
+          <div class="bar-row"><span class="bar-lbl">App errors</span><div class="bar-track"><div class="bar-fill b" style="width:16%"></div></div><span class="bar-val">8</span></div>
+        </div>
+        <!-- Unique: Smart Alert Rules -->
+        <div class="card">
+          <div class="card-t">Smart Alert Rules <span class="ct-a" onclick="toast('Alert editor opened')">Edit</span></div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 11px;background:var(--card2);border-radius:9px;border:1px solid var(--b1)"><div><div style="font-size:11px;font-weight:600;color:var(--t1)">Rider unresponsive &gt; 10 min</div><div style="font-size:10px;color:var(--t3)">Auto-flag + notify dispatch</div></div><label class="tog"><input type="checkbox" checked><div class="tog-track"></div><div class="tog-thumb"></div></label></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 11px;background:var(--card2);border-radius:9px;border:1px solid var(--b1)"><div><div style="font-size:11px;font-weight:600;color:var(--t1)">3+ refunds from same user in 7 days</div><div style="font-size:10px;color:var(--t3)">Flag for abuse review</div></div><label class="tog"><input type="checkbox" checked><div class="tog-track"></div><div class="tog-thumb"></div></label></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 11px;background:var(--card2);border-radius:9px;border:1px solid var(--b1)"><div><div style="font-size:11px;font-weight:600;color:var(--t1)">Restaurant &lt;1 rider within 2km</div><div style="font-size:10px;color:var(--t3)">Dispatch alert + ETA warning</div></div><label class="tog"><input type="checkbox" checked><div class="tog-track"></div><div class="tog-thumb"></div></label></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 11px;background:var(--card2);border-radius:9px;border:1px solid var(--b1)"><div><div style="font-size:11px;font-weight:600;color:var(--t1)">Payment latency &gt; 5s</div><div style="font-size:10px;color:var(--t3)">Critical alert + fallback check</div></div><label class="tog"><input type="checkbox" checked><div class="tog-track"></div><div class="tog-thumb"></div></label></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ VIEW: REVENUE & P&L ════════════════════ -->
+<div class="view" id="v-revenue">
+  <div class="topbar"><div class="tb-l"><div class="tb-title">Revenue &amp; P&amp;L</div></div><div class="tb-r"><div class="tb-btn" onclick="toast('Downloading P&L CSV...')">↓ P&L CSV</div></div></div>
+  <div style="padding:22px">
+    <!-- Revenue waterfall -->
+    <div class="g5">
+      <div class="kpi g"><div class="kpi-lbl">Gross Revenue</div><div class="kpi-val">₹8.4L</div><div class="kpi-sub">Subscription fees</div><div class="kpi-trend up">+22%</div></div>
+      <div class="kpi r"><div class="kpi-lbl">Rider Payouts</div><div class="kpi-val">₹3.8L</div><div class="kpi-sub">₹55 × 6,900 deliveries</div></div>
+      <div class="kpi a"><div class="kpi-lbl">Platform Costs</div><div class="kpi-val">₹1.2L</div><div class="kpi-sub">Infra + support + ops</div></div>
+      <div class="kpi b"><div class="kpi-lbl">CAC (Avg)</div><div class="kpi-val">₹87</div><div class="kpi-sub">per new user · down from ₹142</div><div class="kpi-trend up">−38%</div></div>
+      <div class="kpi t"><div class="kpi-lbl">Net Profit</div><div class="kpi-val">₹3.4L</div><div class="kpi-sub">40.5% margin</div><div class="kpi-trend up">+8%</div></div>
+    </div>
+    <div class="g2">
+      <div class="card"><div class="card-t">Revenue Breakdown — Sources</div><div class="cw md"><canvas id="rev-sources"></canvas></div>
+        <div style="display:flex;flex-direction:column;gap:7px;margin-top:12px">
+          <div class="bar-row"><span class="bar-lbl">User subscriptions</span><div class="bar-track"><div class="bar-fill g" style="width:82%"></div></div><span class="bar-val">₹5.8L</span></div>
+          <div class="bar-row"><span class="bar-lbl">Restaurant subs</span><div class="bar-track"><div class="bar-fill a" style="width:60%"></div></div><span class="bar-val">₹2.2L</span></div>
+          <div class="bar-row"><span class="bar-lbl">Pro/Elite upsells</span><div class="bar-track"><div class="bar-fill b" style="width:18%"></div></div><span class="bar-val">₹0.4L</span></div>
+        </div>
+      </div>
+      <div class="card"><div class="card-t">Monthly P&amp;L — Last 6 Months</div><div class="cw md"><canvas id="rev-pl"></canvas></div></div>
+    </div>
+    <!-- Unique: Unit Economics -->
+    <div class="card gfull">
+      <div class="card-t">Unit Economics — Per Order</div>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px">
+        <div style="padding:14px 10px;background:var(--card2);border-radius:10px;border:1px solid var(--b1);text-align:center"><div style="font-family:var(--f2);font-size:20px;color:var(--grn);margin-bottom:3px">₹541</div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3)">Avg Order Value</div></div>
+        <div style="padding:14px 10px;background:var(--card2);border-radius:10px;border:1px solid var(--b1);text-align:center"><div style="font-family:var(--f2);font-size:20px;color:var(--amb);margin-bottom:3px">₹36.8</div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3)">Revenue / Order</div></div>
+        <div style="padding:14px 10px;background:var(--card2);border-radius:10px;border:1px solid var(--b1);text-align:center"><div style="font-family:var(--f2);font-size:20px;color:var(--red);margin-bottom:3px">₹55</div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3)">Rider Cost / Order</div></div>
+        <div style="padding:14px 10px;background:var(--card2);border-radius:10px;border:1px solid var(--b1);text-align:center"><div style="font-family:var(--f2);font-size:20px;color:var(--blue);margin-bottom:3px">₹5.2</div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3)">Infra Cost / Order</div></div>
+        <div style="padding:14px 10px;background:var(--card2);border-radius:10px;border:1px solid var(--b1);text-align:center"><div style="font-family:var(--f2);font-size:20px;color:var(--red);margin-bottom:3px">−₹23.4</div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3)">Net / Order (deficit)</div></div>
+        <div style="padding:14px 10px;background:rgba(21,128,61,0.08);border-radius:10px;border:1px solid rgba(21,128,61,0.2);text-align:center"><div style="font-family:var(--f2);font-size:20px;color:var(--grn);margin-bottom:3px">3.1×</div><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3)">LTV / CAC Ratio</div></div>
+      </div>
+      <div style="margin-top:12px;padding:11px 14px;background:var(--asft);border-radius:10px;border:1px solid var(--amid);font-size:12px;color:var(--amb);line-height:1.6">
+        <strong>Note:</strong> Per-order economics are currently negative (−₹23.4) because subscription revenue covers delivery costs. At 1,200+ orders/day per restaurant, per-order costs drop below subscription revenue per order. Current break-even: 820 orders/day platform-wide. Today: 761/day. 7.6% to break-even.
+      </div>
+    </div>
+    <div class="g2">
+      <div class="card"><div class="card-t">CAC Trend — Last 6 Months</div><div class="cw"><canvas id="rev-cac"></canvas></div></div>
+      <div class="card"><div class="card-t">LTV Projection by Plan</div>
+        <div style="display:flex;flex-direction:column;gap:9px;margin-top:4px">
+          <div style="padding:12px;background:var(--card2);border-radius:10px;border:1px solid var(--b1)"><div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px;font-weight:700;color:var(--t1)">Free Tier</span><span style="font-family:var(--f2);font-size:14px;color:var(--t3)">₹0</span></div><div class="bar-track"><div class="bar-fill r" style="width:8%"></div></div><div style="font-size:10px;color:var(--t3);margin-top:3px">Conversion target: push to Regular within 14 days</div></div>
+          <div style="padding:12px;background:var(--card2);border-radius:10px;border:1px solid var(--b1)"><div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px;font-weight:700;color:var(--t1)">Regular · ₹299/mo</span><span style="font-family:var(--f2);font-size:14px;color:var(--amb)">₹3,588/yr</span></div><div class="bar-track"><div class="bar-fill a" style="width:45%"></div></div><div style="font-size:10px;color:var(--t3);margin-top:3px">LTV ~₹8,200 over 27-mo avg lifetime</div></div>
+          <div style="padding:12px;background:var(--card2);border-radius:10px;border:1px solid rgba(21,128,61,0.2)"><div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px;font-weight:700;color:var(--grn)">Super · ₹499/mo ← Best</span><span style="font-family:var(--f2);font-size:14px;color:var(--grn)">₹5,988/yr</span></div><div class="bar-track"><div class="bar-fill g" style="width:78%"></div></div><div style="font-size:10px;color:var(--t3);margin-top:3px">LTV ~₹13,600 over 27-mo avg lifetime · 2,847 users</div></div>
+          <div style="padding:12px;background:var(--card2);border-radius:10px;border:1px solid var(--b1)"><div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px;font-weight:700;color:var(--t1)">Corporate · ₹9,999/mo</span><span style="font-family:var(--f2);font-size:14px;color:var(--blue)">₹1.2L/yr</span></div><div class="bar-track"><div class="bar-fill b" style="width:100%"></div></div><div style="font-size:10px;color:var(--t3);margin-top:3px">12 accounts · Priority to grow this segment</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ VIEW: LEAKAGE DETECTOR ════════════════════ -->
+<div class="view" id="v-leakage">
+  <div class="topbar"><div class="tb-l"><div class="tb-title">Leakage Detector</div></div><div class="tb-r"><div class="tb-btn pri" onclick="toast('Leakage report sent to finance team','g')">📧 Send to Finance</div></div></div>
+  <div style="padding:22px">
+    <div style="background:var(--rsft);border:1px solid var(--rmid);border-radius:13px;padding:16px 20px;margin-bottom:16px">
+      <div style="font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:4px">TOTAL ESTIMATED LEAKAGE THIS MONTH</div>
+      <div style="display:flex;align-items:baseline;gap:12px">
+        <div style="font-family:var(--f2);font-size:42px;font-weight:900;color:var(--red)">₹1,24,800</div>
+        <div style="font-size:13px;color:var(--t3)">across 3 leakage categories · 14.8% of gross revenue</div>
+      </div>
+    </div>
+    <div class="g3">
+      <div class="card" style="border-color:var(--rmid)">
+        <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);margin-bottom:8px">LEAKAGE #1 — CREDIT ABUSE</div>
+        <div style="font-family:var(--f2);font-size:32px;color:var(--red);margin-bottom:4px">₹68,400</div>
+        <div style="font-size:11px;color:var(--t3);margin-bottom:12px;line-height:1.6">38 users showing refund claim patterns inconsistent with genuine issues. Avg 5.2 claims each in 30 days vs platform avg of 0.4.</div>
+        <div class="bar-row"><span class="bar-lbl">Confirmed abuse</span><div class="bar-track"><div class="bar-fill r" style="width:55%"></div></div><span class="bar-val">12</span></div>
+        <div class="bar-row"><span class="bar-lbl">High risk</span><div class="bar-track"><div class="bar-fill a" style="width:34%"></div></div><span class="bar-val">14</span></div>
+        <div class="bar-row"><span class="bar-lbl">Under watch</span><div class="bar-track"><div class="bar-fill b" style="width:20%"></div></div><span class="bar-val">12</span></div>
+        <button onclick="sv('abuse')" style="width:100%;margin-top:12px;padding:8px;border-radius:9px;background:rgba(200,41,10,0.12);border:1px solid rgba(200,41,10,0.25);color:var(--red);font-family:var(--f1);font-size:11px;font-weight:700;cursor:pointer">View in Abuse Detector →</button>
+      </div>
+      <div class="card" style="border-color:var(--amid)">
+        <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--amb);margin-bottom:8px">LEAKAGE #2 — RIDER OVERPAYS</div>
+        <div style="font-family:var(--f2);font-size:32px;color:var(--amb);margin-bottom:4px">₹34,100</div>
+        <div style="font-size:11px;color:var(--t3);margin-bottom:12px;line-height:1.6">Platform paid ₹55 for 14 deliveries where GPS data shows delivery was not completed. 2 riders with repeated patterns flagged.</div>
+        <div class="bar-row"><span class="bar-lbl">Failed delivery paid</span><div class="bar-track"><div class="bar-fill a" style="width:58%"></div></div><span class="bar-val">14</span></div>
+        <div class="bar-row"><span class="bar-lbl">Flagged riders</span><div class="bar-track"><div class="bar-fill r" style="width:14%"></div></div><span class="bar-val">2</span></div>
+        <button onclick="sv('riders')" style="width:100%;margin-top:12px;padding:8px;border-radius:9px;background:rgba(217,119,6,0.1);border:1px solid rgba(217,119,6,0.25);color:var(--amb);font-family:var(--f1);font-size:11px;font-weight:700;cursor:pointer">Review in Rider Network →</button>
+      </div>
+      <div class="card" style="border-color:var(--bmid)">
+        <div style="font-size:9px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--blue);margin-bottom:8px">LEAKAGE #3 — PLAN DORMANCY</div>
+        <div style="font-family:var(--f2);font-size:32px;color:var(--blue);margin-bottom:4px">₹22,300</div>
+        <div style="font-size:11px;color:var(--t3);margin-bottom:12px;line-height:1.6">74 subscribed users who paid but did not order in 30 days. Revenue kept but no platform activity — churn risk if not reactivated.</div>
+        <div class="bar-row"><span class="bar-lbl">0 orders in 30d</span><div class="bar-track"><div class="bar-fill b" style="width:74%"></div></div><span class="bar-val">74</span></div>
+        <div class="bar-row"><span class="bar-lbl">Last active &gt;2w</span><div class="bar-track"><div class="bar-fill b" style="width:48%"></div></div><span class="bar-val">48</span></div>
+        <button onclick="toast('Re-engagement campaign sent to 74 dormant users','g')" style="width:100%;margin-top:12px;padding:8px;border-radius:9px;background:rgba(29,78,216,0.1);border:1px solid rgba(29,78,216,0.25);color:var(--blue);font-family:var(--f1);font-size:11px;font-weight:700;cursor:pointer">Send Re-engagement Push →</button>
+      </div>
+    </div>
+    <div class="card gfull">
+      <div class="card-t">Leakage Trend — Last 30 Days</div>
+      <div class="cw md"><canvas id="leak-trend"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ VIEW: USERS ════════════════════ -->
+<div class="view" id="v-users">
+  <div class="topbar"><div class="tb-l"><div class="tb-title">User Management</div></div><div class="tb-r"><div class="tb-btn" onclick="toast('Exporting user CSV...')">↓ Export</div><input style="padding:6px 12px;border-radius:8px;border:1px solid var(--b1);background:var(--card);font-family:var(--f1);font-size:11px;color:var(--t2);outline:none;width:180px" placeholder="Search users..." oninput="toast('Searching...')"></div></div>
+  <div style="padding:22px">
+    <div class="g5">
+      <div class="kpi g"><div class="kpi-lbl">Total Registered</div><div class="kpi-val">6,842</div><div class="kpi-sub">All time</div></div>
+      <div class="kpi a"><div class="kpi-lbl">Active (MTD)</div><div class="kpi-val">4,287</div><div class="kpi-sub">Placed ≥1 order</div></div>
+      <div class="kpi b"><div class="kpi-lbl">Paid Subscribers</div><div class="kpi-val">3,912</div><div class="kpi-sub">Regular + Super + Corp</div></div>
+      <div class="kpi p"><div class="kpi-lbl">Churn Rate</div><div class="kpi-val">4.2%</div><div class="kpi-sub">30-day rolling</div><div class="kpi-trend up">−0.8%</div></div>
+      <div class="kpi t"><div class="kpi-lbl">Avg Spend / User</div><div class="kpi-val">₹1,388</div><div class="kpi-sub">This month</div></div>
+    </div>
+    <div class="g32">
+      <div>
+        <div class="card gfull" style="margin-bottom:14px">
+          <div class="card-t">Top Users by Platform Spend <span class="ct-a" onclick="toast('Full leaderboard exported')">Export all</span></div>
+          <table class="tbl">
+            <thead><tr><th>#</th><th>Name</th><th>Plan</th><th>Orders MTD</th><th>Spend MTD</th><th>Total Spend</th><th>Avg Order</th><th>Credits Used</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td><span style="color:var(--amb);font-weight:700">1</span></td><td class="hi">Arjun Mehta</td><td><span class="badge purp">Super</span></td><td class="hi">47</td><td class="gn">₹22,440</td><td>₹1,14,200</td><td>₹477</td><td>12</td><td><span class="badge grn">Active</span></td></tr>
+              <tr><td>2</td><td class="hi">Priya Sharma</td><td><span class="badge purp">Super</span></td><td class="hi">38</td><td class="gn">₹18,240</td><td>₹88,400</td><td>₹480</td><td>11</td><td><span class="badge grn">Active</span></td></tr>
+              <tr><td>3</td><td class="hi">Vikram Nair</td><td><span class="badge blue">Regular</span></td><td class="hi">34</td><td class="gn">₹16,320</td><td>₹72,600</td><td>₹480</td><td>8</td><td><span class="badge grn">Active</span></td></tr>
+              <tr><td>4</td><td class="hi">Neha Kapoor</td><td><span class="badge purp">Super</span></td><td>28</td><td class="gn">₹13,440</td><td>₹58,200</td><td>₹480</td><td>9</td><td><span class="badge grn">Active</span></td></tr>
+              <tr><td>5</td><td class="hi">Kiran Reddy</td><td><span class="badge blue">Regular</span></td><td>22</td><td class="gn">₹10,560</td><td>₹44,800</td><td>₹480</td><td>7</td><td><span class="badge amb">At risk</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="g2" style="margin-bottom:0">
+          <div class="card"><div class="card-t">User Growth</div><div class="cw sm"><canvas id="usr-growth"></canvas></div></div>
+          <div class="card"><div class="card-t">Plan Distribution</div><div class="cw sm"><canvas id="usr-plans"></canvas></div></div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-t">User Funnel</div>
+          <div class="funnel-step"><div class="fs-bar-wrap"><div class="fs-lbl">App Downloads</div><div class="fs-bar" style="width:100%;background:linear-gradient(90deg,var(--red),var(--red2))">6,842 <span style="position:absolute;right:10px;font-size:10px;opacity:.7">100%</span></div></div></div>
+          <div class="funnel-step"><div class="fs-bar-wrap"><div class="fs-lbl">Registered</div><div class="fs-bar" style="width:88%;background:linear-gradient(90deg,var(--red),var(--red2))">6,021 <span style="position:absolute;right:10px;font-size:10px;opacity:.7">88%</span></div></div></div>
+          <div class="funnel-step"><div class="fs-bar-wrap"><div class="fs-lbl">First Order</div><div class="fs-bar" style="width:72%;background:linear-gradient(90deg,var(--amb),var(--amb2))">4,935 <span style="position:absolute;right:10px;font-size:10px;opacity:.7">72%</span></div></div></div>
+          <div class="funnel-step"><div class="fs-bar-wrap"><div class="fs-lbl">Subscribed</div><div class="fs-bar" style="width:57%;background:linear-gradient(90deg,var(--amb),var(--amb2))">3,912 <span style="position:absolute;right:10px;font-size:10px;opacity:.7">57%</span></div></div></div>
+          <div class="funnel-step"><div class="fs-bar-wrap"><div class="fs-lbl">Active MTD</div><div class="fs-bar" style="width:44%;background:linear-gradient(90deg,var(--grn),var(--grn))">3,006 <span style="position:absolute;right:10px;font-size:10px;opacity:.7">44%</span></div></div></div>
+          <div class="funnel-step"><div class="fs-bar-wrap"><div class="fs-lbl">10+ orders MTD</div><div class="fs-bar" style="width:22%;background:linear-gradient(90deg,var(--grn),var(--grn))">1,508 <span style="position:absolute;right:10px;font-size:10px;opacity:.7">22%</span></div></div></div>
+        </div>
+        <div class="card">
+          <div class="card-t">Segment Health</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="padding:10px 12px;background:rgba(21,128,61,0.07);border-radius:9px;border:1px solid rgba(21,128,61,0.15);display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:11px;font-weight:700;color:var(--grn)">Champions — Daily orderers</div><div style="font-size:10px;color:var(--t3)">Avg 5.8 orders/week</div></div><div style="font-family:var(--f2);font-size:16px;color:var(--grn)">412</div></div>
+            <div style="padding:10px 12px;background:rgba(29,78,216,0.07);border-radius:9px;border:1px solid rgba(29,78,216,0.15);display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:11px;font-weight:700;color:var(--blue)">Loyal — 3–5×/week</div><div style="font-size:10px;color:var(--t3)">Avg 3.8 orders/week</div></div><div style="font-family:var(--f2);font-size:16px;color:var(--blue)">1,248</div></div>
+            <div style="padding:10px 12px;background:rgba(217,119,6,0.07);border-radius:9px;border:1px solid rgba(217,119,6,0.15);display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:11px;font-weight:700;color:var(--amb)">Regular — 1–2×/week</div><div style="font-size:10px;color:var(--t3)">Avg 1.4 orders/week</div></div><div style="font-family:var(--f2);font-size:16px;color:var(--amb)">1,932</div></div>
+            <div style="padding:10px 12px;background:rgba(200,41,10,0.06);border-radius:9px;border:1px solid rgba(200,41,10,0.15);display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:11px;font-weight:700;color:var(--red)">At Risk — No order in 14d</div><div style="font-size:10px;color:var(--t3)">Need reactivation</div></div><div style="font-family:var(--f2);font-size:16px;color:var(--red)">695</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ VIEW: ABUSE DETECTION ════════════════════ -->
+<div class="view" id="v-abuse">
+  <div class="topbar"><div class="tb-l"><div class="tb-title">Abuse Detection</div></div><div class="tb-r"><div class="tb-btn" onclick="toast('Abuse report exported')">↓ Report</div><div class="tb-btn pri" onclick="showModal('Ban Selected Users','This will permanently ban 12 confirmed abuse accounts. All active subscriptions will be refunded pro-rata.','Confirm Bans','r')">⛔ Ban Selected</div></div></div>
+  <div style="padding:22px">
+    <div style="background:var(--rsft);border:1px solid var(--rmid);border-radius:13px;padding:14px 18px;margin-bottom:16px;font-size:12px;color:var(--t2);line-height:1.7"><strong style="color:var(--red)">How Fudzo detects abuse:</strong> Our model scores each user on 8 signals — refund frequency, claim-to-order ratio, time-between-claims, location variance, new account flags, complaint language patterns, credit exhaustion speed, and delivery confirmation photos. Score &gt;75 = high risk. Score &gt;90 = ban recommended.</div>
+    <div class="g4">
+      <div class="kpi r"><div class="kpi-lbl">Confirmed Abusers</div><div class="kpi-val">12</div><div class="kpi-sub">Score &gt;90 · Pending ban</div></div>
+      <div class="kpi a"><div class="kpi-lbl">High Risk</div><div class="kpi-val">26</div><div class="kpi-sub">Score 75–90 · Monitoring</div></div>
+      <div class="kpi b"><div class="kpi-lbl">Under Watch</div><div class="kpi-val">48</div><div class="kpi-sub">Score 50–75</div></div>
+      <div class="kpi g"><div class="kpi-lbl">Abuse Prevented MTD</div><div class="kpi-val">₹68,400</div><div class="kpi-sub">Refunds blocked</div></div>
+    </div>
+    <div class="g32">
+      <div class="card">
+        <div class="card-t">Confirmed Abuse Accounts <span class="ct-a" onclick="toast('All selected')">Select All</span></div>
+        <table class="tbl">
+          <thead><tr><th></th><th>User</th><th>Abuse Score</th><th>Refund Claims</th><th>Amount</th><th>Pattern</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td><input type="checkbox" checked></td><td class="hi">Priya S.</td><td><span class="badge red">94</span></td><td class="rd">8 claims</td><td class="rd">₹6,840</td><td style="font-size:10px;color:var(--t3)">Claim after delivery confirmed</td><td><button onclick="toast('User banned','r')" style="padding:4px 10px;border-radius:6px;background:rgba(200,41,10,0.12);border:1px solid rgba(200,41,10,0.25);color:var(--red);font-size:10px;font-weight:700;cursor:pointer">Ban</button></td></tr>
+            <tr><td><input type="checkbox" checked></td><td class="hi">Raj M.</td><td><span class="badge red">92</span></td><td class="rd">7 claims</td><td class="rd">₹5,960</td><td style="font-size:10px;color:var(--t3)">Claims cluster Monday mornings</td><td><button onclick="toast('User banned','r')" style="padding:4px 10px;border-radius:6px;background:rgba(200,41,10,0.12);border:1px solid rgba(200,41,10,0.25);color:var(--red);font-size:10px;font-weight:700;cursor:pointer">Ban</button></td></tr>
+            <tr><td><input type="checkbox"></td><td class="hi">Anita K.</td><td><span class="badge amb">88</span></td><td class="am">6 claims</td><td class="am">₹4,800</td><td style="font-size:10px;color:var(--t3)">New account, high frequency</td><td><button onclick="toast('Restricted to 1 refund/week','a')" style="padding:4px 10px;border-radius:6px;background:rgba(217,119,6,0.1);border:1px solid rgba(217,119,6,0.25);color:var(--amb);font-size:10px;font-weight:700;cursor:pointer">Restrict</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-t">Abuse Score Distribution</div>
+          <div class="cw"><canvas id="ab-dist"></canvas></div>
+        </div>
+        <!-- Unique: Abuse Pattern Visualizer -->
+        <div class="card">
+          <div class="card-t">Top Abuse Patterns</div>
+          <div class="bar-row"><span class="bar-lbl">Claim after delivery</span><div class="bar-track"><div class="bar-fill r" style="width:82%"></div></div><span class="bar-val">41%</span></div>
+          <div class="bar-row"><span class="bar-lbl">Multiple new accounts</span><div class="bar-track"><div class="bar-fill r" style="width:54%"></div></div><span class="bar-val">27%</span></div>
+          <div class="bar-row"><span class="bar-lbl">Credit farming</span><div class="bar-track"><div class="bar-fill a" style="width:36%"></div></div><span class="bar-val">18%</span></div>
+          <div class="bar-row"><span class="bar-lbl">Wrong item fake claim</span><div class="bar-track"><div class="bar-fill a" style="width:22%"></div></div><span class="bar-val">11%</span></div>
+          <div class="bar-row"><span class="bar-lbl">Payment reversal abuse</span><div class="bar-track"><div class="bar-fill b" style="width:12%"></div></div><span class="bar-val">6%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ VIEW: RESTAURANTS ════════════════════ -->
+<div class="view" id="v-restaurants">
+  <div class="topbar"><div class="tb-l"><div class="tb-title">Restaurant Management</div></div><div class="tb-r"><div class="tb-btn" onclick="toast('Exporting restaurant data...')">↓ Export</div><div class="tb-btn pri" onclick="showModal('Onboard New Restaurant','Send onboarding invite to a new restaurant partner. They will receive setup instructions and a 30-day Growth trial.','Send Invite','g')">+ Onboard</div></div></div>
+  <div style="padding:22px">
+    <div class="g5">
+      <div class="kpi g"><div class="kpi-lbl">Total Partners</div><div class="kpi-val">63</div><div class="kpi-sub">Active on platform</div><div class="kpi-trend up">+8 this month</div></div>
+      <div class="kpi a"><div class="kpi-lbl">Online Now</div><div class="kpi-val">28</div><div class="kpi-sub">Accepting orders</div></div>
+      <div class="kpi r"><div class="kpi-lbl">Offline / Paused</div><div class="kpi-val">6</div><div class="kpi-sub">Temp unavailable</div></div>
+      <div class="kpi b"><div class="kpi-lbl">Total GMV MTD</div><div class="kpi-val">₹1.8Cr</div><div class="kpi-sub">Across all restaurants</div></div>
+      <div class="kpi p"><div class="kpi-lbl">Avg Rating</div><div class="kpi-val">4.6</div><div class="kpi-sub">Platform-wide</div></div>
+    </div>
+    <div class="card gfull" style="margin-bottom:14px">
+      <div class="card-t">Restaurant Performance Table <span class="ct-s">Sorted by GMV this month</span></div>
+      <table class="tbl">
+        <thead><tr><th>#</th><th>Restaurant</th><th>Plan</th><th>Area</th><th>GMV MTD</th><th>Orders</th><th>Avg Order</th><th>Rating</th><th>Complaints</th><th>Rank</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><span style="color:var(--amb);font-weight:700">1</span></td><td class="hi">Bay Leaf Coastal</td><td><span class="badge purp">Pro</span></td><td>Gachibowli</td><td class="gn">₹4,84,200</td><td class="hi">1,240</td><td>₹390</td><td style="color:var(--amb)">★ 4.9</td><td><span class="badge grn">2</span></td><td><span class="badge grn">#1</span></td><td><span class="badge grn">Online</span></td></tr>
+          <tr><td>2</td><td class="hi">Naan &amp; Flame</td><td><span class="badge blue">Growth</span></td><td>Gachibowli</td><td class="gn">₹4,18,400</td><td class="hi">847</td><td>₹494</td><td style="color:var(--amb)">★ 4.8</td><td><span class="badge amb">3</span></td><td><span class="badge blue">#2</span></td><td><span class="badge grn">Online</span></td></tr>
+          <tr><td>3</td><td class="hi">Spice Garden</td><td><span class="badge blue">Growth</span></td><td>Gachibowli</td><td class="gn">₹2,94,000</td><td>612</td><td>₹480</td><td style="color:var(--amb)">★ 4.6</td><td><span class="badge grn">1</span></td><td><span class="badge purp">#3</span></td><td><span class="badge grn">Online</span></td></tr>
+          <tr><td>4</td><td class="hi">Chai Stop</td><td><span class="badge amb">Starter</span></td><td>Gachibowli</td><td class="gn">₹1,12,800</td><td>1,880</td><td>₹60</td><td style="color:var(--amb)">★ 4.6</td><td><span class="badge amb">5</span></td><td><span class="badge blue">#4</span></td><td><span class="badge grn">Online</span></td></tr>
+          <tr><td>5</td><td class="hi">Bun Maska Co.</td><td><span class="badge amb">Starter</span></td><td>Nanakram.</td><td class="gn">₹84,600</td><td>1,410</td><td>₹60</td><td style="color:var(--amb)">★ 4.5</td><td><span class="badge grn">0</span></td><td><span class="badge blue">#5</span></td><td><span class="badge grn">Online</span></td></tr>
+          <tr><td>6</td><td class="hi">Coastal Bites</td><td><span class="badge blue">Growth</span></td><td>HITEC City</td><td class="gn">₹76,200</td><td>156</td><td>₹488</td><td style="color:var(--red)">★ 3.9</td><td><span class="badge red">12</span></td><td><span class="badge red">⚠ Low</span></td><td><span class="badge amb">Issues</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="g2">
+      <div class="card"><div class="card-t">GMV by Restaurant — Top 8</div><div class="cw md"><canvas id="rst-gmv"></canvas></div></div>
+      <div class="card">
+        <div class="card-t">Why Is Coastal Bites Underperforming?</div>
+        <div style="font-size:11px;color:var(--t3);margin-bottom:12px;line-height:1.6">Auto-analysis based on data vs platform averages:</div>
+        <div class="alert-row crit" style="margin-bottom:8px"><div class="ar-ico">⏱</div><div class="ar-body"><div class="ar-title crit">Avg prep time: 34 min (platform avg: 18 min)</div><div class="ar-sub">Causing late delivery complaints — 8 this month</div></div></div>
+        <div class="alert-row crit" style="margin-bottom:8px"><div class="ar-ico">⭐</div><div class="ar-body"><div class="ar-title crit">Rating 3.9 — lowest on platform</div><div class="ar-sub">Food quality complaints dominate. Menu audit needed.</div></div></div>
+        <div class="alert-row warn" style="margin-bottom:8px"><div class="ar-ico">📋</div><div class="ar-body"><div class="ar-title warn">Menu photos missing — 9 of 14 items</div><div class="ar-sub">Converts 3× worse than average. Fix = +40% orders.</div></div></div>
+        <button onclick="toast('Improvement report sent to Coastal Bites','g')" style="width:100%;margin-top:4px;padding:9px;border-radius:9px;background:rgba(200,41,10,0.1);border:1px solid rgba(200,41,10,0.25);color:var(--red);font-family:var(--f1);font-size:11px;font-weight:700;cursor:pointer">Send Improvement Report to Restaurant</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ VIEW: RIDERS ════════════════════ -->
+<div class="view" id="v-riders">
+  <div class="topbar"><div class="tb-l"><div class="tb-title">Rider Network</div></div><div class="tb-r"><div class="tb-btn pri" onclick="showModal('Onboard New Rider','Add a new delivery partner to the Fudzo network. They will receive onboarding materials and first-delivery bonus.','Add Rider','g')">+ Add Rider</div></div></div>
+  <div style="padding:22px">
+    <div class="g5">
+      <div class="kpi g"><div class="kpi-lbl">Total Riders</div><div class="kpi-val">48</div><div class="kpi-sub">On network</div></div>
+      <div class="kpi a"><div class="kpi-lbl">Active Today</div><div class="kpi-val">22</div><div class="kpi-sub">Logged in</div></div>
+      <div class="kpi b"><div class="kpi-lbl">Online Now</div><div class="kpi-val">12</div><div class="kpi-sub">Delivering or free</div></div>
+      <div class="kpi r"><div class="kpi-lbl">Total Paid MTD</div><div class="kpi-val">₹3.8L</div><div class="kpi-sub">₹55 × 6,900 deliveries</div></div>
+      <div class="kpi t"><div class="kpi-lbl">Avg Rating</div><div class="kpi-val">4.7</div><div class="kpi-sub">Platform-wide</div></div>
+    </div>
+    <div class="g32">
+      <div class="card">
+        <div class="card-t">Rider Performance Table</div>
+        <table class="tbl">
+          <thead><tr><th>#</th><th>Rider</th><th>Status</th><th>Deliveries MTD</th><th>Earned MTD</th><th>Rating</th><th>On-Time %</th><th>Flags</th></tr></thead>
+          <tbody>
+            <tr><td><span style="color:var(--amb)">1</span></td><td class="hi">Rahul Kumar</td><td><span class="badge grn">Delivering</span></td><td class="hi">312</td><td class="gn">₹17,160</td><td style="color:var(--amb)">★ 4.9</td><td class="gn">97%</td><td><span class="badge grn">Clean</span></td></tr>
+            <tr><td>2</td><td class="hi">Suresh M.</td><td><span class="badge grn">Free</span></td><td class="hi">284</td><td class="gn">₹15,620</td><td style="color:var(--amb)">★ 4.8</td><td class="gn">94%</td><td><span class="badge grn">Clean</span></td></tr>
+            <tr><td>3</td><td class="hi">Ravi Shankar</td><td><span class="badge amb">Offline</span></td><td>198</td><td>₹10,890</td><td style="color:var(--amb)">★ 4.7</td><td>88%</td><td><span class="badge grn">Clean</span></td></tr>
+            <tr><td>4</td><td class="hi">Karthik P.</td><td><span class="badge grn">Delivering</span></td><td>156</td><td>₹8,580</td><td style="color:var(--amb)">★ 4.6</td><td>85%</td><td><span class="badge amb">1 warn</span></td></tr>
+            <tr><td>5</td><td class="hi">Venkat R.</td><td><span class="badge red">Flagged</span></td><td>88</td><td>₹4,840</td><td style="color:var(--red)">★ 3.8</td><td class="rd">62%</td><td><span class="badge red">GPS fraud</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:14px"><div class="card-t">Deliveries by Rider — Top 10</div><div class="cw"><canvas id="rdr-dels"></canvas></div></div>
+        <div class="card">
+          <div class="card-t">Rider Pay Transparency</div>
+          <div style="padding:12px;background:rgba(21,128,61,0.07);border-radius:10px;border:1px solid rgba(21,128,61,0.15);margin-bottom:10px;font-size:12px;color:var(--t2);line-height:1.7"><strong style="color:var(--grn)">₹55 per delivery</strong> — Fudzo pays 57% more than the ₹35 industry standard. Total paid to riders this month: <strong style="color:var(--grn)">₹3,80,500</strong></div>
+          <div class="bar-row"><span class="bar-lbl">₹0–₹5,000</span><div class="bar-track"><div class="bar-fill b" style="width:28%"></div></div><span class="bar-val">14</span></div>
+          <div class="bar-row"><span class="bar-lbl">₹5K–₹10K</span><div class="bar-track"><div class="bar-fill a" style="width:44%"></div></div><span class="bar-val">20</span></div>
+          <div class="bar-row"><span class="bar-lbl">₹10K–₹15K</span><div class="bar-track"><div class="bar-fill g" style="width:24%"></div></div><span class="bar-val">10</span></div>
+          <div class="bar-row"><span class="bar-lbl">₹15K+</span><div class="bar-track"><div class="bar-fill g" style="width:8%"></div></div><span class="bar-val">4</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ VIEW: AREA INTELLIGENCE ════════════════════ -->
+<div class="view" id="v-areas">
+  <div class="topbar"><div class="tb-l"><div class="tb-title">Area Intelligence</div></div></div>
+  <div style="padding:22px">
+    <div class="g4">
+      <div class="kpi r"><div class="kpi-lbl">Top Area GMV</div><div class="kpi-val" style="font-size:18px">Gachibowli</div><div class="kpi-sub">₹96L MTD · 45% share</div></div>
+      <div class="kpi g"><div class="kpi-lbl">Fastest Growing</div><div class="kpi-val" style="font-size:18px">Nanakram.</div><div class="kpi-sub">+34% MoM</div></div>
+      <div class="kpi a"><div class="kpi-lbl">Lowest Penetration</div><div class="kpi-val" style="font-size:18px">Kondapur</div><div class="kpi-sub">Opportunity zone</div></div>
+      <div class="kpi b"><div class="kpi-lbl">Zones Active</div><div class="kpi-val">6</div><div class="kpi-sub">Gachi · Nanak · HITEC · FD · Kondk · Madh.</div></div>
+    </div>
+    <div class="g2">
+      <div class="card"><div class="card-t">Orders by Area — This Month</div>
+        <div class="bar-row"><span class="bar-lbl">Gachibowli</span><div class="bar-track"><div class="bar-fill r" style="width:100%"></div></div><span class="bar-val">9,847</span></div>
+        <div class="bar-row"><span class="bar-lbl">Nanakramguda</span><div class="bar-track"><div class="bar-fill r" style="width:62%"></div></div><span class="bar-val">6,105</span></div>
+        <div class="bar-row"><span class="bar-lbl">HITEC City</span><div class="bar-track"><div class="bar-fill a" style="width:40%"></div></div><span class="bar-val">3,940</span></div>
+        <div class="bar-row"><span class="bar-lbl">Financial Dist.</span><div class="bar-track"><div class="bar-fill a" style="width:26%"></div></div><span class="bar-val">2,562</span></div>
+        <div class="bar-row"><span class="bar-lbl">Kondapur</span><div class="bar-track"><div class="bar-fill b" style="width:14%"></div></div><span class="bar-val">1,380</span></div>
+        <div class="bar-row"><span class="bar-lbl">Madhapur</span><div class="bar-track"><div class="bar-fill b" style="width:10%"></div></div><span class="bar-val">985</span></div>
+        <div class="card-t" style="margin-top:16px;margin-bottom:10px">Order Heatmap <span class="ct-s">7-day pattern · darker = more orders</span></div>
+        <div style="display:flex;gap:8px;margin-bottom:6px">
+          <div style="width:80px;flex-shrink:0"></div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;flex:1">
+            <div style="font-size:8px;color:var(--t4);text-align:center">Mon</div><div style="font-size:8px;color:var(--t4);text-align:center">Tue</div><div style="font-size:8px;color:var(--t4);text-align:center">Wed</div><div style="font-size:8px;color:var(--t4);text-align:center">Thu</div><div style="font-size:8px;color:var(--t4);text-align:center">Fri</div><div style="font-size:8px;color:var(--t4);text-align:center">Sat</div><div style="font-size:8px;color:var(--t4);text-align:center">Sun</div>
+          </div>
+        </div>
+        <div id="area-hm"></div>
+      </div>
+      <div class="card"><div class="card-t">Expansion Opportunity Radar</div>
+        <div class="cw md"><canvas id="ar-radar"></canvas></div>
+        <div style="margin-top:12px;padding:11px 13px;background:rgba(21,128,61,0.07);border-radius:9px;border:1px solid rgba(21,128,61,0.15);font-size:11px;color:var(--t2);line-height:1.65"><strong style="color:var(--grn)">Kondapur signal:</strong> Search intent data shows 2,400 Kondapur residents searching "food delivery Kondapur" monthly with zero Fudzo presence. Estimated revenue opportunity: ₹18L/month at current ARPU. Recommend: 3 restaurant partnerships + 4 dedicated riders to launch.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ VIEW: COMPLAINTS HUB ════════════════════ -->
+<div class="view" id="v-complaints">
+  <div class="topbar"><div class="tb-l"><div class="tb-title">Complaints Hub</div></div><div class="tb-r"><div class="tb-btn pri" onclick="toast('Auto-resolved 8 routine complaints','g')">⚡ Auto-Resolve Routine</div></div></div>
+  <div style="padding:22px">
+    <div class="g4">
+      <div class="kpi r"><div class="kpi-lbl">Open Complaints</div><div class="kpi-val">23</div><div class="kpi-sub">Across platform</div></div>
+      <div class="kpi g"><div class="kpi-lbl">Resolved MTD</div><div class="kpi-val">284</div><div class="kpi-sub">Avg 2.1h resolution</div></div>
+      <div class="kpi a"><div class="kpi-lbl">Escalated to HQ</div><div class="kpi-val">7</div><div class="kpi-sub">Need manual review</div></div>
+      <div class="kpi b"><div class="kpi-lbl">Refunds Paid MTD</div><div class="kpi-val">₹42,800</div><div class="kpi-sub">228 refund orders</div></div>
+    </div>
+    <div class="g2">
+      <div class="card"><div class="card-t">All Open Complaints</div>
+        <table class="tbl">
+          <thead><tr><th>ID</th><th>User</th><th>Restaurant</th><th>Type</th><th>Value</th><th>Time Open</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td>#C-4421</td><td>Arjun M.</td><td>Bay Leaf</td><td><span class="badge red">Wrong item</span></td><td>₹340</td><td class="rd">48 min</td><td><button onclick="toast('Refund approved · Restaurant notified','g')" style="padding:4px 10px;border-radius:6px;background:rgba(21,128,61,0.1);border:1px solid rgba(21,128,61,0.2);color:var(--grn);font-size:10px;font-weight:700;cursor:pointer">Resolve</button></td></tr>
+            <tr><td>#C-4418</td><td>Priya S.</td><td>Naan &amp; Flame</td><td><span class="badge amb">Cold food</span></td><td>₹220</td><td class="am">1h 12m</td><td><button onclick="toast('Credit issued to user','g')" style="padding:4px 10px;border-radius:6px;background:rgba(21,128,61,0.1);border:1px solid rgba(21,128,61,0.2);color:var(--grn);font-size:10px;font-weight:700;cursor:pointer">Resolve</button></td></tr>
+            <tr><td>#C-4410</td><td>Vikram N.</td><td>Coastal Bites</td><td><span class="badge red">Not delivered</span></td><td>₹680</td><td class="rd">2h 4m</td><td><button onclick="showModal('Escalate Order #C-4410','This complaint involves a ₹680 undelivered order. GPS data inconclusive. Recommend full refund and rider investigation.','Full Refund + Investigate','r')" style="padding:4px 10px;border-radius:6px;background:rgba(200,41,10,0.1);border:1px solid rgba(200,41,10,0.25);color:var(--red);font-size:10px;font-weight:700;cursor:pointer">Escalate</button></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:14px"><div class="card-t">Complaint Categories MTD</div>
+          <div class="bar-row"><span class="bar-lbl">Wrong item</span><div class="bar-track"><div class="bar-fill r" style="width:82%"></div></div><span class="bar-val">82</span></div>
+          <div class="bar-row"><span class="bar-lbl">Late delivery</span><div class="bar-track"><div class="bar-fill r" style="width:64%"></div></div><span class="bar-val">64</span></div>
+          <div class="bar-row"><span class="bar-lbl">Cold food</span><div class="bar-track"><div class="bar-fill a" style="width:52%"></div></div><span class="bar-val">52</span></div>
+          <div class="bar-row"><span class="bar-lbl">Not delivered</span><div class="bar-track"><div class="bar-fill a" style="width:34%"></div></div><span class="bar-val">34</span></div>
+          <div class="bar-row"><span class="bar-lbl">Missing item</span><div class="bar-track"><div class="bar-fill b" style="width:28%"></div></div><span class="bar-val">28</span></div>
+          <div class="bar-row"><span class="bar-lbl">Quality issue</span><div class="bar-track"><div class="bar-fill b" style="width:22%"></div></div><span class="bar-val">22</span></div>
+        </div>
+        <div class="card"><div class="card-t">Resolution Speed Trend</div><div class="cw sm"><canvas id="compl-speed"></canvas></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ VIEW: GROWTH ENGINE ════════════════════ -->
+<div class="view" id="v-growth">
+  <div class="topbar"><div class="tb-l"><div class="tb-title">Growth Engine</div></div><div class="tb-r"><div class="tb-btn pri" onclick="toast('Campaign launched','g')">🚀 New Campaign</div></div></div>
+  <div style="padding:22px">
+    <div class="g4">
+      <div class="kpi g"><div class="kpi-lbl">MoM Growth</div><div class="kpi-val">+22%</div><div class="kpi-sub">GMV month over month</div></div>
+      <div class="kpi a"><div class="kpi-lbl">New Users MTD</div><div class="kpi-val">842</div><div class="kpi-sub">Organic: 680 · Referral: 162</div></div>
+      <div class="kpi b"><div class="kpi-lbl">Referral Rate</div><div class="kpi-val">19.2%</div><div class="kpi-sub">Of new signups via referral</div><div class="kpi-trend up">+4%</div></div>
+      <div class="kpi p"><div class="kpi-lbl">NPS Score</div><div class="kpi-val">62</div><div class="kpi-sub">Based on 1,240 responses</div><div class="kpi-trend up">+7</div></div>
+    </div>
+    <div class="g2">
+      <div class="card"><div class="card-t">Growth Channels</div>
+        <div class="bar-row"><span class="bar-lbl">Word of mouth</span><div class="bar-track"><div class="bar-fill g" style="width:52%"></div></div><span class="bar-val">52%</span></div>
+        <div class="bar-row"><span class="bar-lbl">Referral credits</span><div class="bar-track"><div class="bar-fill g" style="width:19%"></div></div><span class="bar-val">19%</span></div>
+        <div class="bar-row"><span class="bar-lbl">WhatsApp/Reddit</span><div class="bar-track"><div class="bar-fill a" style="width:16%"></div></div><span class="bar-val">16%</span></div>
+        <div class="bar-row"><span class="bar-lbl">Restaurant QR</span><div class="bar-track"><div class="bar-fill b" style="width:8%"></div></div><span class="bar-val">8%</span></div>
+        <div class="bar-row"><span class="bar-lbl">Paid</span><div class="bar-track"><div class="bar-fill b" style="width:5%"></div></div><span class="bar-val">5%</span></div>
+        <div class="card-t" style="margin-top:16px;margin-bottom:10px">Growth Levers — Active Campaigns</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="padding:9px 12px;background:var(--card2);border-radius:9px;border:1px solid var(--b1);display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:11px;font-weight:600;color:var(--t1)">Re-engage dormant users (74)</div><div style="font-size:10px;color:var(--t3)">1 free Garlic Naan on next order</div></div><span class="badge grn">Running</span></div>
+          <div style="padding:9px 12px;background:var(--card2);border-radius:9px;border:1px solid var(--b1);display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:11px;font-weight:600;color:var(--t1)">Free→Regular conversion push</div><div style="font-size:10px;color:var(--t3)">30-day Regular trial for free users</div></div><span class="badge grn">Running</span></div>
+          <div style="padding:9px 12px;background:var(--card2);border-radius:9px;border:1px solid var(--b1);display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:11px;font-weight:600;color:var(--t1)">Kondapur launch prep</div><div style="font-size:10px;color:var(--t3)">3 restaurants + 4 riders ready</div></div><span class="badge amb">Planning</span></div>
+          <div style="padding:9px 12px;background:var(--card2);border-radius:9px;border:1px solid var(--b1);display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:11px;font-weight:600;color:var(--t1)">Referral credit boost weekend</div><div style="font-size:10px;color:var(--t3)">2× credit for referrals Sat–Sun</div></div><span class="badge purp">Draft</span></div>
+        </div>
+      </div>
+      <div class="card"><div class="card-t">North Star Metric — Weekly Active Users</div><div class="cw lg"><canvas id="gr-wau"></canvas></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ VIEW: CONFIG ════════════════════ -->
+<div class="view" id="v-config">
+  <div class="topbar"><div class="tb-l"><div class="tb-title">Platform Configuration</div></div><div class="tb-r"><div class="tb-btn pri" onclick="toast('Config saved and deployed','g')">Deploy Changes</div></div></div>
+  <div style="padding:22px">
+    <div class="g2">
+      <div>
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-t">Platform Toggles</div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:12px;font-weight:600;color:var(--t1)">Platform accepting new orders</div><div style="font-size:10px;color:var(--t3)">Emergency kill switch</div></div><label class="tog"><input type="checkbox" checked><div class="tog-track"></div><div class="tog-thumb"></div></label></div>
+            <div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:12px;font-weight:600;color:var(--t1)">New user registrations open</div><div style="font-size:10px;color:var(--t3)">Disable to limit growth pace</div></div><label class="tog"><input type="checkbox" checked><div class="tog-track"></div><div class="tog-thumb"></div></label></div>
+            <div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:12px;font-weight:600;color:var(--t1)">Abuse detection model active</div><div style="font-size:10px;color:var(--t3)">Auto-flag suspicious patterns</div></div><label class="tog"><input type="checkbox" checked><div class="tog-track"></div><div class="tog-thumb"></div></label></div>
+            <div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:12px;font-weight:600;color:var(--t1)">Auto-assign free riders to orders</div><div style="font-size:10px;color:var(--t3)">Dispatch automation</div></div><label class="tog"><input type="checkbox" checked><div class="tog-track"></div><div class="tog-thumb"></div></label></div>
+            <div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:12px;font-weight:600;color:var(--t1)">SMS notifications active</div><div style="font-size:10px;color:var(--t3)">Order status updates</div></div><label class="tog"><input type="checkbox" checked><div class="tog-track"></div><div class="tog-thumb"></div></label></div>
+            <div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:12px;font-weight:600;color:var(--t1)">Maintenance mode</div><div style="font-size:10px;color:var(--t3)">Shows maintenance page to users</div></div><label class="tog"><input type="checkbox"><div class="tog-track"></div><div class="tog-thumb"></div></label></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-t">Credit &amp; Refund Rules</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div><div style="font-size:10px;font-weight:700;color:var(--t3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px">Max refund claims / user / month</div><input class="num-inp" value="5" type="number"></div>
+            <div><div style="font-size:10px;font-weight:700;color:var(--t3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px">Auto-refund under ₹ (no approval needed)</div><input class="num-inp" value="200" type="number"></div>
+            <div><div style="font-size:10px;font-weight:700;color:var(--t3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px">Abuse score threshold for auto-flag</div><input class="num-inp" value="75" type="number"></div>
+            <div><div style="font-size:10px;font-weight:700;color:var(--t3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px">Rider payout per delivery (₹)</div><input class="num-inp" value="55" type="number"></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-t">Zone Management</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="padding:10px 12px;background:var(--card2);border-radius:9px;border:1px solid var(--b1);display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:11px;font-weight:600;color:var(--t1)">Gachibowli</div><div style="font-size:10px;color:var(--t3)">Primary zone · 3km radius</div></div><span class="badge grn">Active</span></div>
+            <div style="padding:10px 12px;background:var(--card2);border-radius:9px;border:1px solid var(--b1);display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:11px;font-weight:600;color:var(--t1)">Nanakramguda</div><div style="font-size:10px;color:var(--t3)">Secondary zone · 2.5km radius</div></div><span class="badge grn">Active</span></div>
+            <div style="padding:10px 12px;background:var(--card2);border-radius:9px;border:1px solid var(--b1);display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:11px;font-weight:600;color:var(--t1)">Kondapur</div><div style="font-size:10px;color:var(--t3)">Pilot zone launching soon</div></div><span class="badge amb">Prep</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-t">Sub-Admin Access</div>
+          <table class="tbl">
+            <thead><tr><th>Name</th><th>Role</th><th>Access</th><th></th></tr></thead>
+            <tbody>
+              <tr><td class="hi">Suresh K.</td><td>Super Admin</td><td><span class="badge grn">Full</span></td><td><button onclick="toast('Edit opened')" style="padding:3px 8px;border-radius:6px;background:var(--bg3);border:1px solid var(--b1);color:var(--t3);font-size:10px;cursor:pointer">Edit</button></td></tr>
+              <tr><td class="hi">Riya M.</td><td>Operations</td><td><span class="badge blue">Ops only</span></td><td><button onclick="toast('Edit opened')" style="padding:3px 8px;border-radius:6px;background:var(--bg3);border:1px solid var(--b1);color:var(--t3);font-size:10px;cursor:pointer">Edit</button></td></tr>
+              <tr><td class="hi">Arpit S.</td><td>Finance</td><td><span class="badge purp">Finance only</span></td><td><button onclick="toast('Edit opened')" style="padding:3px 8px;border-radius:6px;background:var(--bg3);border:1px solid var(--b1);color:var(--t3);font-size:10px;cursor:pointer">Edit</button></td></tr>
+            </tbody>
+          </table>
+          <button onclick="toast('New sub-admin invite sent')" style="width:100%;margin-top:12px;padding:8px;border-radius:9px;background:var(--bg3);border:1px solid var(--b1);color:var(--t2);font-family:var(--f1);font-size:11px;font-weight:600;cursor:pointer">+ Add Sub-Admin</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════ VIEW: QUALITY SCORES ════════════════════ -->
+<div class="view" id="v-quality">
+  <div class="topbar">
+    <div class="tb-l"><div class="tb-title">Quality Scores</div></div>
+    <div class="tb-r">
+      <div class="tb-btn" onclick="toast('Quality report exported')">↓ Export</div>
+      <div class="tb-btn pri" onclick="toast('Quality alerts sent to all low-scoring partners','g')">📧 Alert Low Scorers</div>
+    </div>
+  </div>
+  <div style="padding:22px">
+    <!-- Platform-wide quality KPIs -->
+    <div class="g4">
+      <div class="kpi g"><div class="kpi-lbl">Platform Avg Rating</div><div class="kpi-val">4.7</div><div class="kpi-sub">Based on 18,420 ratings MTD</div><div class="kpi-trend up">+0.2 vs last month</div></div>
+      <div class="kpi a"><div class="kpi-lbl">Order Accuracy Rate</div><div class="kpi-val">96.4%</div><div class="kpi-sub">Correct items delivered</div><div class="kpi-trend up">+1.2%</div></div>
+      <div class="kpi b"><div class="kpi-lbl">On-Time Delivery</div><div class="kpi-val">88.2%</div><div class="kpi-sub">Within estimated window</div><div class="kpi-trend dn">−0.8%</div></div>
+      <div class="kpi r"><div class="kpi-lbl">Complaint Rate</div><div class="kpi-val">1.24%</div><div class="kpi-sub">Per 100 orders</div><div class="kpi-trend up">−0.3%</div></div>
+    </div>
+
+    <div class="g32">
+      <div>
+        <!-- Restaurant quality leaderboard -->
+        <div class="card gfull" style="margin-bottom:14px">
+          <div class="card-t">Restaurant Quality Scorecard <span class="ct-s">Composite score = rating + accuracy + speed + complaints</span></div>
+          <table class="tbl">
+            <thead><tr><th>Rank</th><th>Restaurant</th><th>Food Rating</th><th>Accuracy</th><th>Avg Prep</th><th>Complaint Rate</th><th>Score</th><th>Trend</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="li-rank gold" style="display:inline-flex">1</span></td>
+                <td class="hi">Bay Leaf Coastal</td>
+                <td style="color:var(--amb)">★ 4.9</td>
+                <td class="gn">99.1%</td>
+                <td class="gn">14 min</td>
+                <td class="gn">0.16%</td>
+                <td><span style="font-family:var(--f2);font-size:15px;font-weight:700;color:var(--grn)">96</span></td>
+                <td><span class="badge grn">↑ +3</span></td>
+              </tr>
+              <tr>
+                <td><span class="li-rank silver" style="display:inline-flex">2</span></td>
+                <td class="hi">Naan &amp; Flame</td>
+                <td style="color:var(--amb)">★ 4.8</td>
+                <td class="gn">98.2%</td>
+                <td class="gn">18 min</td>
+                <td class="gn">0.35%</td>
+                <td><span style="font-family:var(--f2);font-size:15px;font-weight:700;color:var(--grn)">91</span></td>
+                <td><span class="badge grn">↑ +1</span></td>
+              </tr>
+              <tr>
+                <td><span class="li-rank bronze" style="display:inline-flex">3</span></td>
+                <td class="hi">Spice Garden</td>
+                <td style="color:var(--amb)">★ 4.6</td>
+                <td>97.4%</td>
+                <td>22 min</td>
+                <td>0.49%</td>
+                <td><span style="font-family:var(--f2);font-size:15px;font-weight:700;color:var(--amb)">84</span></td>
+                <td><span class="badge grn">↑ +2</span></td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td class="hi">Chai Stop</td>
+                <td style="color:var(--amb)">★ 4.6</td>
+                <td>96.8%</td>
+                <td>10 min</td>
+                <td>0.64%</td>
+                <td><span style="font-family:var(--f2);font-size:15px;font-weight:700;color:var(--amb)">81</span></td>
+                <td><span class="badge amb">→ 0</span></td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td class="hi">Bun Maska Co.</td>
+                <td style="color:var(--amb)">★ 4.5</td>
+                <td>97.1%</td>
+                <td>8 min</td>
+                <td>0.42%</td>
+                <td><span style="font-family:var(--f2);font-size:15px;font-weight:700;color:var(--amb)">80</span></td>
+                <td><span class="badge grn">↑ +4</span></td>
+              </tr>
+              <tr style="background:var(--rsft)">
+                <td>6</td>
+                <td class="hi">Coastal Bites</td>
+                <td style="color:var(--red)">★ 3.9</td>
+                <td class="rd">91.2%</td>
+                <td class="rd">34 min</td>
+                <td class="rd">4.10%</td>
+                <td><span style="font-family:var(--f2);font-size:15px;font-weight:700;color:var(--red)">42</span></td>
+                <td><span class="badge red">↓ −8</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Rider quality -->
+        <div class="card">
+          <div class="card-t">Rider Quality Scorecard</div>
+          <table class="tbl">
+            <thead><tr><th>Rider</th><th>Delivery Rating</th><th>On-Time %</th><th>GPS Accuracy</th><th>Complaints</th><th>Score</th></tr></thead>
+            <tbody>
+              <tr><td class="hi">Rahul Kumar</td><td style="color:var(--amb)">★ 4.9</td><td class="gn">97%</td><td class="gn">99.8%</td><td><span class="badge grn">0</span></td><td><span style="font-family:var(--f2);font-weight:700;color:var(--grn)">98</span></td></tr>
+              <tr><td class="hi">Suresh M.</td><td style="color:var(--amb)">★ 4.8</td><td class="gn">94%</td><td class="gn">99.2%</td><td><span class="badge grn">1</span></td><td><span style="font-family:var(--f2);font-weight:700;color:var(--grn)">93</span></td></tr>
+              <tr><td class="hi">Ravi Shankar</td><td style="color:var(--amb)">★ 4.7</td><td>88%</td><td>98.4%</td><td><span class="badge grn">2</span></td><td><span style="font-family:var(--f2);font-weight:700;color:var(--amb)">85</span></td></tr>
+              <tr><td class="hi">Karthik P.</td><td style="color:var(--amb)">★ 4.6</td><td>85%</td><td>97.1%</td><td><span class="badge amb">3</span></td><td><span style="font-family:var(--f2);font-weight:700;color:var(--amb)">78</span></td></tr>
+              <tr style="background:var(--rsft)"><td class="hi">Venkat R.</td><td style="color:var(--red)">★ 3.8</td><td class="rd">62%</td><td class="rd">84.2%</td><td><span class="badge red">11</span></td><td><span style="font-family:var(--f2);font-weight:700;color:var(--red)">38</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div>
+        <!-- Quality trend charts -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-t">Platform Rating Trend <span class="ct-s">6 months</span></div>
+          <div class="cw"><canvas id="ql-rating"></canvas></div>
+        </div>
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-t">Quality Score Distribution <span class="ct-s">All restaurants</span></div>
+          <div class="cw sm"><canvas id="ql-dist"></canvas></div>
+        </div>
+        <!-- Unique: Quality improvement actions -->
+        <div class="card">
+          <div class="card-t">Platform-Wide Quality Issues</div>
+          <div class="alert-row crit" style="margin-bottom:8px" onclick="toast('Coastal Bites improvement plan opened')">
+            <div class="ar-ico">🍽️</div>
+            <div class="ar-body"><div class="ar-title crit">Coastal Bites: Score 42 — Probation zone</div><div class="ar-sub">3 strikes = auto-delisting. Currently on strike 2. Intervention needed.</div></div>
+            <div class="ar-time">Action</div>
+          </div>
+          <div class="alert-row warn" style="margin-bottom:8px" onclick="toast('Delivery delay report opened')">
+            <div class="ar-ico">⏱️</div>
+            <div class="ar-body"><div class="ar-title warn">On-time delivery dipped to 88.2% this week</div><div class="ar-sub">Cause: HITEC City traffic 6–8 PM. Rider routing adjustment needed.</div></div>
+            <div class="ar-time">Review</div>
+          </div>
+          <div class="alert-row warn" onclick="toast('Venkat R. review initiated')">
+            <div class="ar-ico">🛵</div>
+            <div class="ar-body"><div class="ar-title warn">Rider Venkat R.: GPS anomalies detected</div><div class="ar-sub">Score 38. 11 complaints. Recommend suspension pending review.</div></div>
+            <div class="ar-time">Urgent</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ VIEW: COHORT ANALYSIS ════════════════════ -->
+<div class="view" id="v-cohorts">
+  <div class="topbar">
+    <div class="tb-l"><div class="tb-title">Cohort Analysis</div></div>
+    <div class="tb-r">
+      <select style="padding:5px 10px;border-radius:7px;border:1px solid var(--b1);background:var(--card);font-family:var(--f1);font-size:11px;color:var(--t2);outline:none;cursor:pointer" onchange="toast('Cohort view updated')">
+        <option>By signup month</option><option>By acquisition channel</option><option>By plan type</option><option>By area</option>
+      </select>
+      <div class="tb-btn" onclick="toast('Cohort data exported')">↓ Export</div>
+    </div>
+  </div>
+  <div style="padding:22px">
+    <!-- Cohort retention matrix — the classic SaaS cohort table -->
+    <div class="card gfull" style="margin-bottom:14px">
+      <div class="card-t">User Retention Cohort Matrix <span class="ct-s">% of users still ordering each month after signup</span></div>
+      <div style="overflow-x:auto">
+        <table class="tbl" style="min-width:700px">
+          <thead>
+            <tr>
+              <th>Cohort</th><th>Users</th>
+              <th>Month 0</th><th>Month 1</th><th>Month 2</th><th>Month 3</th><th>Month 4</th><th>Month 5</th>
+            </tr>
+          </thead>
+          <tbody id="cohort-matrix"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:12px;display:flex;align-items:center;gap:8px;font-size:10px;color:var(--t3)">
+        <span>Low retention</span>
+        <div style="display:flex;gap:3px">
+          <div style="width:18px;height:12px;border-radius:3px;background:rgba(200,41,10,0.08)"></div>
+          <div style="width:18px;height:12px;border-radius:3px;background:rgba(200,41,10,0.2)"></div>
+          <div style="width:18px;height:12px;border-radius:3px;background:rgba(200,41,10,0.4)"></div>
+          <div style="width:18px;height:12px;border-radius:3px;background:rgba(21,128,61,0.25)"></div>
+          <div style="width:18px;height:12px;border-radius:3px;background:rgba(21,128,61,0.5)"></div>
+          <div style="width:18px;height:12px;border-radius:3px;background:rgba(21,128,61,0.8)"></div>
+        </div>
+        <span>High retention</span>
+      </div>
+    </div>
+
+    <div class="g32">
+      <div>
+        <!-- Retention curves -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-t">Retention Curves by Plan <span class="ct-s">% active vs months since signup</span></div>
+          <div class="cw lg"><canvas id="co-curves"></canvas></div>
+        </div>
+        <!-- Time-to-second-order -->
+        <div class="card">
+          <div class="card-t">Time to 2nd Order <span class="ct-s">How quickly new users reorder</span></div>
+          <div class="cw sm"><canvas id="co-t2o"></canvas></div>
+          <div style="margin-top:10px;padding:10px 12px;background:var(--gsft);border-radius:9px;border:1px solid var(--gmid);font-size:11px;color:var(--t2);line-height:1.65">
+            <strong style="color:var(--grn)">Key insight:</strong> 58% of users who place a 2nd order within 3 days become monthly subscribers. Activation target: get every new user to order twice within 72 hours.
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <!-- Cohort value comparison -->
+        <div class="card" style="margin-bottom:14px">
+          <div class="card-t">Avg Revenue per Cohort <span class="ct-s">Cumulative 6-month LTV</span></div>
+          <div class="cw md"><canvas id="co-ltv"></canvas></div>
+        </div>
+        <!-- Cohort behaviour insights -->
+        <div class="card">
+          <div class="card-t">Cohort Behaviour Insights</div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <div style="padding:11px 13px;background:var(--gsft);border-radius:10px;border:1px solid var(--gmid)">
+              <div style="font-size:11px;font-weight:700;color:var(--grn);margin-bottom:3px">Best cohort: Nov 2024 signup</div>
+              <div style="font-size:10px;color:var(--t3);line-height:1.6">64% still active at month 5. Acquired via Reddit r/hyderabad organic post. High-intent users convert better.</div>
+            </div>
+            <div style="padding:11px 13px;background:var(--asft);border-radius:10px;border:1px solid var(--amid)">
+              <div style="font-size:11px;font-weight:700;color:var(--amb2);margin-bottom:3px">Weakest cohort: Jan 2025 signup</div>
+              <div style="font-size:10px;color:var(--t3);line-height:1.6">Only 38% retained at month 3. Acquired during a referral campaign — lower intent. Improve onboarding flow for referral users.</div>
+            </div>
+            <div style="padding:11px 13px;background:var(--bsft);border-radius:10px;border:1px solid var(--bmid)">
+              <div style="font-size:11px;font-weight:700;color:var(--blue);margin-bottom:3px">Super plan cohorts retain 2.1× better</div>
+              <div style="font-size:10px;color:var(--t3);line-height:1.6">Super plan users at month 5 retention: 68% vs Regular plan: 32%. Upgrade push pays for itself within 2 weeks.</div>
+            </div>
+            <div style="padding:11px 13px;background:var(--rsft);border-radius:10px;border:1px solid var(--rmid)">
+              <div style="font-size:11px;font-weight:700;color:var(--red);margin-bottom:3px">Month 1 drop-off is the biggest risk</div>
+              <div style="font-size:10px;color:var(--t3);line-height:1.6">22% of new users don't order in month 1 after signup. Fix: onboarding push notification on day 3 and day 7.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════ VIEW: SUBSCRIPTIONS ════════════════════ -->
+<div class="view" id="v-subscriptions">
+  <div class="topbar">
+    <div class="tb-l"><div class="tb-title">Subscription Management</div></div>
+    <div class="tb-r">
+      <div class="tb-btn" onclick="toast('MRR report exported')">↓ MRR Export</div>
+      <div class="tb-btn pri" onclick="showModal('Launch Upgrade Campaign','Send targeted upgrade prompts to all Regular plan users who have placed 5+ orders this month.','Launch Campaign','g')">🚀 Upgrade Campaign</div>
+    </div>
+  </div>
+  <div style="padding:22px">
+    <!-- MRR breakdown -->
+    <div class="g5">
+      <div class="kpi g"><div class="kpi-lbl">Total MRR</div><div class="kpi-val">₹8.4L</div><div class="kpi-sub">Monthly recurring revenue</div><div class="kpi-trend up">+22% MoM</div></div>
+      <div class="kpi a"><div class="kpi-lbl">Total Subscribers</div><div class="kpi-val">5,060</div><div class="kpi-sub">Users + Restaurants</div><div class="kpi-trend up">+342 this month</div></div>
+      <div class="kpi b"><div class="kpi-lbl">Churn Rate</div><div class="kpi-val">4.2%</div><div class="kpi-sub">30-day rolling</div><div class="kpi-trend up">−0.8% improving</div></div>
+      <div class="kpi r"><div class="kpi-lbl">Churned MRR</div><div class="kpi-val">₹35,280</div><div class="kpi-sub">Lost this month</div></div>
+      <div class="kpi p"><div class="kpi-lbl">Net New MRR</div><div class="kpi-val">₹1.52L</div><div class="kpi-sub">New − Churned</div><div class="kpi-trend up">+22%</div></div>
+    </div>
+
+    <div class="g2">
+      <!-- User plan breakdown -->
+      <div class="card">
+        <div class="card-t">User Subscription Plans</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+          <div style="padding:13px 15px;background:var(--card2);border-radius:11px;border:1px solid var(--b1)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <div><div style="font-size:13px;font-weight:700;color:var(--t1)">Free Tier</div><div style="font-size:10px;color:var(--t3)">Browse only · No ordering</div></div>
+              <div style="text-align:right"><div style="font-family:var(--f2);font-size:18px;color:var(--t3)">2,930</div><div style="font-size:9px;color:var(--t3)">₹0 MRR</div></div>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:43%;background:var(--b2)"></div></div>
+          </div>
+          <div style="padding:13px 15px;background:var(--bsft);border-radius:11px;border:1px solid var(--bmid)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <div><div style="font-size:13px;font-weight:700;color:var(--blue)">Regular · ₹299/mo</div><div style="font-size:10px;color:var(--t3)">8 credits/month</div></div>
+              <div style="text-align:right"><div style="font-family:var(--f2);font-size:18px;color:var(--blue)">1,065</div><div style="font-size:9px;color:var(--t3)">₹3.18L MRR</div></div>
+            </div>
+            <div class="bar-track"><div class="bar-fill b" style="width:27%"></div></div>
+          </div>
+          <div style="padding:13px 15px;background:var(--psft);border-radius:11px;border:1px solid var(--pmid)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <div><div style="font-size:13px;font-weight:700;color:var(--purple)">Super · ₹499/mo ← Best seller</div><div style="font-size:10px;color:var(--t3)">12 credits + carry-forward + gifting</div></div>
+              <div style="text-align:right"><div style="font-family:var(--f2);font-size:18px;color:var(--purple)">2,847</div><div style="font-size:9px;color:var(--t3)">₹14.2L MRR</div></div>
+            </div>
+            <div class="bar-track"><div class="bar-fill p" style="width:65%"></div></div>
+          </div>
+          <div style="padding:13px 15px;background:var(--asft);border-radius:11px;border:1px solid var(--amid)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <div><div style="font-size:13px;font-weight:700;color:var(--amb2)">Corporate · ₹9,999/mo</div><div style="font-size:10px;color:var(--t3)">Up to 20 employees covered</div></div>
+              <div style="text-align:right"><div style="font-family:var(--f2);font-size:18px;color:var(--amb2)">12</div><div style="font-size:9px;color:var(--t3)">₹1.2L MRR</div></div>
+            </div>
+            <div class="bar-track"><div class="bar-fill a" style="width:8%"></div></div>
+          </div>
+        </div>
+        <div class="cw sm"><canvas id="sub-usplit"></canvas></div>
+      </div>
+
+      <!-- Restaurant plan breakdown -->
+      <div class="card">
+        <div class="card-t">Restaurant Subscription Plans</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+          <div style="padding:13px 15px;background:var(--card2);border-radius:11px;border:1px solid var(--b1)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <div><div style="font-size:13px;font-weight:700;color:var(--t2)">Starter · Free</div><div style="font-size:10px;color:var(--t3)">Basic listing · 10 items max</div></div>
+              <div style="text-align:right"><div style="font-family:var(--f2);font-size:18px;color:var(--t3)">18</div><div style="font-size:9px;color:var(--t3)">₹0 MRR</div></div>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:29%;background:var(--b2)"></div></div>
+          </div>
+          <div style="padding:13px 15px;background:var(--bsft);border-radius:11px;border:1px solid var(--bmid)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <div><div style="font-size:13px;font-weight:700;color:var(--blue)">Growth · ₹2,999/mo</div><div style="font-size:10px;color:var(--t3)">Full analytics + QR + data ownership</div></div>
+              <div style="text-align:right"><div style="font-family:var(--f2);font-size:18px;color:var(--blue)">34</div><div style="font-size:9px;color:var(--t3)">₹1.02L MRR</div></div>
+            </div>
+            <div class="bar-track"><div class="bar-fill b" style="width:54%"></div></div>
+          </div>
+          <div style="padding:13px 15px;background:var(--psft);border-radius:11px;border:1px solid var(--pmid)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <div><div style="font-size:13px;font-weight:700;color:var(--purple)">Pro · ₹4,999/mo</div><div style="font-size:10px;color:var(--t3)">Priority listing + competitor intel</div></div>
+              <div style="text-align:right"><div style="font-family:var(--f2);font-size:18px;color:var(--purple)">9</div><div style="font-size:9px;color:var(--t3)">₹44,991 MRR</div></div>
+            </div>
+            <div class="bar-track"><div class="bar-fill p" style="width:14%"></div></div>
+          </div>
+          <div style="padding:13px 15px;background:var(--asft);border-radius:11px;border:1px solid var(--amid)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <div><div style="font-size:13px;font-weight:700;color:var(--amb2)">Elite · ₹9,999/mo</div><div style="font-size:10px;color:var(--t3)">Multi-outlet + white-glove</div></div>
+              <div style="text-align:right"><div style="font-family:var(--f2);font-size:18px;color:var(--amb2)">2</div><div style="font-size:9px;color:var(--t3)">₹19,998 MRR</div></div>
+            </div>
+            <div class="bar-track"><div class="bar-fill a" style="width:6%"></div></div>
+          </div>
+        </div>
+        <div class="cw sm"><canvas id="sub-rsplit"></canvas></div>
+      </div>
+    </div>
+
+    <!-- MRR trends and churn analysis -->
+    <div class="g2">
+      <div class="card">
+        <div class="card-t">MRR Growth — Last 6 Months</div>
+        <div class="cw md"><canvas id="sub-mrr"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-t">Churn Analysis</div>
+        <div class="cw sm"><canvas id="sub-churn"></canvas></div>
+        <div style="margin-top:12px">
+          <div style="font-size:11px;font-weight:700;color:var(--t1);margin-bottom:8px">Top Churn Reasons</div>
+          <div class="bar-row"><span class="bar-lbl">Moved out of area</span><div class="bar-track"><div class="bar-fill r" style="width:38%"></div></div><span class="bar-val">38%</span></div>
+          <div class="bar-row"><span class="bar-lbl">Price sensitivity</span><div class="bar-track"><div class="bar-fill r" style="width:26%"></div></div><span class="bar-val">26%</span></div>
+          <div class="bar-row"><span class="bar-lbl">Low usage / forgot</span><div class="bar-track"><div class="bar-fill a" style="width:20%"></div></div><span class="bar-val">20%</span></div>
+          <div class="bar-row"><span class="bar-lbl">Bad experience</span><div class="bar-track"><div class="bar-fill a" style="width:12%"></div></div><span class="bar-val">12%</span></div>
+          <div class="bar-row"><span class="bar-lbl">Switched to competitor</span><div class="bar-track"><div class="bar-fill b" style="width:6%"></div></div><span class="bar-val">4%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Renewals coming up -->
+    <div class="card gfull">
+      <div class="card-t">Renewals Due This Week <span class="ct-s">At-risk accounts to proactively contact</span></div>
+      <table class="tbl">
+        <thead><tr><th>Name</th><th>Type</th><th>Plan</th><th>MRR Value</th><th>Last Order</th><th>Risk</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td class="hi">TechCorp Solutions</td><td>Corporate</td><td><span class="badge amb">Corp ₹9,999</span></td><td class="gn">₹9,999</td><td>Today</td><td><span class="badge grn">Low</span></td><td><button onclick="toast('Auto-renewal on. No action needed.')" style="padding:4px 10px;border-radius:6px;background:var(--gsft);border:1px solid var(--gmid);color:var(--grn);font-size:10px;font-weight:700;cursor:pointer">Auto-renewing</button></td></tr>
+          <tr><td class="hi">Bay Leaf Coastal</td><td>Restaurant</td><td><span class="badge purp">Pro ₹4,999</span></td><td class="gn">₹4,999</td><td>Today</td><td><span class="badge grn">Low</span></td><td><button onclick="toast('Bay Leaf renewal confirmed','g')" style="padding:4px 10px;border-radius:6px;background:var(--gsft);border:1px solid var(--gmid);color:var(--grn);font-size:10px;font-weight:700;cursor:pointer">Confirm</button></td></tr>
+          <tr><td class="hi">Kiran Reddy</td><td>User</td><td><span class="badge blue">Regular ₹299</span></td><td>₹299</td><td>8 days ago</td><td><span class="badge amb">Medium</span></td><td><button onclick="toast('Re-engagement push sent to Kiran','g')" style="padding:4px 10px;border-radius:6px;background:var(--asft);border:1px solid var(--amid);color:var(--amb2);font-size:10px;font-weight:700;cursor:pointer">Send nudge</button></td></tr>
+          <tr><td class="hi">Suresh Iyer</td><td>User</td><td><span class="badge blue">Regular ₹299</span></td><td>₹299</td><td>15 days ago</td><td><span class="badge red">High</span></td><td><button onclick="toast('Retention offer sent — 1 month 50% off','g')" style="padding:4px 10px;border-radius:6px;background:var(--rsft);border:1px solid var(--rmid);color:var(--red);font-size:10px;font-weight:700;cursor:pointer">Retention offer</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div><!-- #main -->
+</div><!-- #shell -->
+<script>
+// ── HELPERS ───────────────────────────────────────────────────────────
+var _tt;
+function toast(m,t){
+  var e=document.getElementById('toast');
+  e.textContent=m;
+  e.className='toast show'+(t?' '+t:'');
+  clearTimeout(_tt);
+  _tt=setTimeout(function(){e.classList.remove('show');},2400);
+}
+function showModal(title,sub,btn,t){
+  document.getElementById('mtitle').textContent=title;
+  document.getElementById('msub').textContent=sub;
+  document.getElementById('mconfirm').textContent=btn||'Confirm';
+  document.getElementById('mconfirm').style.background=t==='g'?'var(--grn)':'var(--red)';
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(){document.getElementById('modal').classList.remove('open');toast('Action confirmed','g');}
+
+// ── CLOCK ─────────────────────────────────────────────────────────────
+function updateClock(){
+  var n=new Date(),h=n.getHours(),m=n.getMinutes(),s=n.getSeconds();
+  var str=(h<10?'0':'')+h+':'+(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+  var el=document.getElementById('hq-clock');
+  if(el) el.textContent=str;
+}
+setInterval(updateClock,1000);
+updateClock();
+
+// ── LIVE COUNTERS ─────────────────────────────────────────────────────
+var liveUsers=247, liveOrders=34;
+setInterval(function(){
+  liveUsers+=Math.floor(Math.random()*3)-1;
+  liveUsers=Math.max(200,Math.min(400,liveUsers));
+  liveOrders+=Math.floor(Math.random()*3)-1;
+  liveOrders=Math.max(20,Math.min(60,liveOrders));
+  var lu=document.getElementById('live-users');
+  var lo=document.getElementById('live-orders');
+  var lb=document.getElementById('live-badge');
+  var lou=document.getElementById('lo-users');
+  if(lu) lu.textContent=liveUsers;
+  if(lo) lo.textContent=liveOrders;
+  if(lb) lb.textContent=liveOrders;
+  if(lou) lou.textContent=liveUsers;
+},3000);
+
+// ── LIVE MAP RIDERS  (use 'rid' not 'id') ────────────────────────────
+var rPositions=[
+  [{l:'38%',t:'44%'},{l:'58%',t:'35%'}],
+  [{l:'44%',t:'40%'},{l:'64%',t:'30%'}],
+  [{l:'50%',t:'36%'},{l:'55%',t:'40%'}],
+  [{l:'45%',t:'42%'},{l:'62%',t:'33%'}]
+];
+var rStep=0;
+setInterval(function(){
+  rStep=(rStep+1)%4;
+  var p=rPositions[rStep];
+  var rids=['lr1','lr2'];
+  for(var ri=0;ri<rids.length;ri++){
+    var el=document.getElementById(rids[ri]);
+    if(el){el.style.left=p[ri].l; el.style.top=p[ri].t;}
+  }
+},4200);
+
+// ── LIVE ORDERS TABLE ─────────────────────────────────────────────────
+var orderRows=[
+  ['#FDZ-7742','Arjun M.','Naan &amp; Flame','Butter Chk &times;1','&#8377;500','<span class="badge red">Pending</span>','0:42'],
+  ['#FDZ-7741','Priya S.','Bay Leaf','Prawn Masala &times;1','&#8377;680','<span class="badge blue">Preparing</span>','4:10'],
+  ['#FDZ-7740','Vikram N.','Chai Stop','Chai &times;3','&#8377;180','<span class="badge amb">On the way</span>','8:22'],
+  ['#FDZ-7739','Neha K.','Naan &amp; Flame','Dal Makhani &times;2','&#8377;320','<span class="badge blue">Preparing</span>','10:45'],
+  ['#FDZ-7738','Kiran R.','Bun Maska','Bun Maska &times;2','&#8377;80','<span class="badge grn">Delivered</span>','12:00'],
+  ['#FDZ-7737','Ravi S.','Bay Leaf','Fish Curry &times;1','&#8377;280','<span class="badge amb">On the way</span>','14:30']
+];
+(function(){
+  var tb=document.getElementById('live-orders-table');
+  if(!tb) return;
+  var h='';
+  for(var oi=0;oi<orderRows.length;oi++){
+    var row=orderRows[oi];
+    h+='<tr>';
+    for(var ci=0;ci<row.length;ci++){
+      h+='<td'+(ci===0?' class="hi"':ci===4?' class="gn"':'')+'>'+row[ci]+'</td>';
+    }
+    h+='<td><button onclick="toast(\'Order detail\')" style="padding:4px 9px;border-radius:6px;background:var(--bg3);border:1px solid var(--b1);color:var(--t3);font-size:10px;cursor:pointer">View</button></td></tr>';
+  }
+  tb.innerHTML=h;
+})();
+
+// ── VIEW NAVIGATION ───────────────────────────────────────────────────
+var chartsInited={};
+function sv(viewId){
+  document.querySelectorAll('.view').forEach(function(v){v.classList.remove('on');});
+  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('on');});
+  var v=document.getElementById('v-'+viewId);
+  if(v) v.classList.add('on');
+  document.querySelectorAll('.ni').forEach(function(n){
+    var oc=n.getAttribute('onclick');
+    if(oc && oc.indexOf("'"+viewId+"'")>=0) n.classList.add('on');
+  });
+  if(viewId==='cohorts') delete chartsInited['cohorts'];
+  setTimeout(function(){initCharts(viewId);},150);
+}
+
+// ── CHART HELPERS (use 'eid' not 'id') ───────────────────────────────
+Chart.defaults.color='rgba(120,113,108,0.9)';
+Chart.defaults.borderColor='rgba(0,0,0,0.06)';
+
+var CC={
+  red:'rgba(200,41,10',grn:'rgba(21,128,61',amb:'rgba(217,119,6',
+  blue:'rgba(29,78,216',purp:'rgba(124,58,237',teal:'rgba(15,118,110',
+  white:'rgba(28,25,23'
+};
+function col(c,a){return CC[c]+','+a+')';}
+
+var days30=[];
+for(var _d=1;_d<=30;_d++) days30.push(''+_d);
+var months6=['Nov','Dec','Jan','Feb','Mar','Apr'];
+var hours=['6a','7','8','9','10','11','12p','1','2','3','4','5','6','7','8','9','10','11'];
+
+var baseOpts={
+  responsive:true,
+  maintainAspectRatio:false,
+  plugins:{legend:{display:false}},
+  scales:{
+    y:{beginAtZero:true,ticks:{font:{size:9}},grid:{color:'rgba(0,0,0,0.05)'}},
+    x:{ticks:{font:{size:9},maxRotation:0},grid:{display:false}}
+  }
+};
+var dOpts={responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{display:false}}};
+
+var charts={};
+
+function mkLine(eid,labels,data,color,fill){
+  var c=document.getElementById(eid);
+  if(!c) return;
+  if(charts[eid]){try{charts[eid].destroy();}catch(e){}}
+  charts[eid]=new Chart(c,{
+    type:'line',
+    data:{labels:labels,datasets:[{data:data,borderColor:col(color,0.8),backgroundColor:col(color,fill?0.12:0),borderWidth:2,tension:0.4,fill:fill,pointRadius:0}]},
+    options:baseOpts
+  });
+}
+function mkBar(eid,labels,data,color){
+  var c=document.getElementById(eid);
+  if(!c) return;
+  if(charts[eid]){try{charts[eid].destroy();}catch(e){}}
+  charts[eid]=new Chart(c,{
+    type:'bar',
+    data:{labels:labels,datasets:[{data:data,backgroundColor:col(color,0.75),borderRadius:4,borderSkipped:false}]},
+    options:baseOpts
+  });
+}
+function mkDoughnut(eid,data,colors){
+  var c=document.getElementById(eid);
+  if(!c) return;
+  if(charts[eid]){try{charts[eid].destroy();}catch(e){}}
+  charts[eid]=new Chart(c,{type:'doughnut',data:{datasets:[{data:data,backgroundColor:colors,borderWidth:0,hoverOffset:4}]},options:dOpts});
+}
+function mkMultiLine(eid,labels,datasets){
+  var c=document.getElementById(eid);
+  if(!c) return;
+  if(charts[eid]){try{charts[eid].destroy();}catch(e){}}
+  charts[eid]=new Chart(c,{
+    type:'line',
+    data:{labels:labels,datasets:datasets},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{color:'rgba(120,113,108,0.9)',font:{size:9},boxWidth:10,padding:8}}},
+      scales:{
+        y:{beginAtZero:true,ticks:{font:{size:9}},grid:{color:'rgba(0,0,0,0.05)'}},
+        x:{ticks:{font:{size:9},maxRotation:0},grid:{display:false}}
+      }
+    }
+  });
+}
+
+function randArr(len,base,variance){
+  var arr=[];
+  for(var i=0;i<len;i++) arr.push(Math.round(base+Math.random()*variance-(variance/2)));
+  return arr;
+}
+
+// ── INIT CHARTS ───────────────────────────────────────────────────────
+function initCharts(viewId){
+  if(chartsInited[viewId]) return;
+  chartsInited[viewId]=true;
+
+  if(viewId==='overview'){
+    mkMultiLine('ov-revenue',days30,[
+      {label:'Subscriptions',data:randArr(30,24000,8000),borderColor:col('grn',0.8),backgroundColor:col('grn',0.06),fill:true,tension:.4,pointRadius:0,borderWidth:2},
+      {label:'Restaurant fees',data:randArr(30,8000,3000),borderColor:col('amb',0.8),backgroundColor:'transparent',tension:.4,pointRadius:0,borderWidth:2}
+    ]);
+    mkBar('ov-hourly',hours,randArr(18,28,40),'red');
+    mkDoughnut('ov-area',randArr(5,20,15),[col('red',0.8),col('amb',0.8),col('blue',0.7),col('grn',0.7),col('purp',0.6)]);
+    mkDoughnut('ov-plans',[42,36,18,4],[col('purp',0.8),col('blue',0.8),col('amb',0.7),col('grn',0.6)]);
+  }
+
+  if(viewId==='live'){
+    var rates=randArr(24,2,3);
+    mkLine('lo-rate',randArr(24,1,1).map(function(_,i){return i+'m';}),rates,'red',true);
+    mkDoughnut('lo-stages',[8,14,12,2],[col('red',0.8),col('blue',0.8),col('amb',0.8),col('grn',0.7)]);
+  }
+
+  if(viewId==='alerts'){
+    mkBar('al-volume',['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],randArr(7,12,10),'red');
+  }
+
+  if(viewId==='revenue'){
+    mkDoughnut('rev-sources',[580,220,40],[col('grn',0.8),col('amb',0.8),col('blue',0.7)]);
+    mkMultiLine('rev-pl',months6,[
+      {label:'Revenue',data:[580000,640000,720000,760000,810000,840000],borderColor:col('grn',0.8),backgroundColor:col('grn',0.08),fill:true,tension:.4,pointRadius:3,borderWidth:2},
+      {label:'Costs',data:[490000,510000,530000,545000,490000,500000],borderColor:col('red',0.8),backgroundColor:'transparent',tension:.4,pointRadius:3,borderWidth:2}
+    ]);
+    mkLine('rev-cac',months6,[142,128,116,104,94,87],'grn',true);
+  }
+
+  if(viewId==='leakage'){
+    mkMultiLine('leak-trend',days30,[
+      {label:'Credit abuse',data:randArr(30,2000,800),borderColor:col('red',0.8),backgroundColor:col('red',0.08),fill:true,tension:.4,pointRadius:0,borderWidth:2},
+      {label:'Rider overpays',data:randArr(30,1100,400),borderColor:col('amb',0.8),backgroundColor:'transparent',tension:.4,pointRadius:0,borderWidth:2},
+      {label:'Plan dormancy',data:randArr(30,700,300),borderColor:col('blue',0.8),backgroundColor:'transparent',tension:.4,pointRadius:0,borderWidth:2}
+    ]);
+  }
+
+  if(viewId==='users'){
+    mkLine('usr-growth',months6,[3200,3900,4400,4900,5600,6842],'grn',true);
+    mkDoughnut('usr-plans',[44,38,16,2],[col('purp',0.8),col('blue',0.8),col('amb',0.7),col('teal',0.6)]);
+  }
+
+  if(viewId==='abuse'){
+    mkBar('ab-dist',['0-10','10-20','20-30','30-40','40-50','50-60','60-70','70-80','80-90','90-100'],[45,38,28,22,18,14,10,8,5,3],'red');
+  }
+
+  if(viewId==='restaurants'){
+    var cRst=document.getElementById('rst-gmv');
+    if(cRst){
+      if(charts['rst-gmv']){try{charts['rst-gmv'].destroy();}catch(e){}}
+      charts['rst-gmv']=new Chart(cRst,{
+        type:'bar',
+        data:{
+          labels:['Bay Leaf','Naan&Flame','Spice Gdn','Chai Stop','Bun Maska','Coastal','Biryani Co','Others'],
+          datasets:[{
+            data:[484200,418400,294000,112800,84600,76200,64800,240000],
+            backgroundColor:function(ctx){
+              var i=ctx.dataIndex;
+              return i<2?col('grn',0.75):i<4?col('amb',0.75):col('red',0.6);
+            },
+            borderRadius:5,borderSkipped:false
+          }]
+        },
+        options:{
+          responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{display:false}},
+          scales:{
+            y:{beginAtZero:true,ticks:{font:{size:9}},grid:{color:'rgba(0,0,0,0.05)'}},
+            x:{ticks:{font:{size:8},maxRotation:25},grid:{display:false}}
+          }
+        }
+      });
+    }
+  }
+
+  if(viewId==='riders'){
+    mkBar('rdr-dels',['Rahul','Suresh','Ravi','Karthik','Venkat','Siva','Mohan','Bhanu','Arjun','Ramu'],[312,284,198,156,88,76,64,58,44,38],'grn');
+  }
+
+  if(viewId==='areas'){
+    var areas=['Gachibowli','Nanakram.','HITEC City','Fin.Dist.','Kondapur','Madhapur'];
+    var hmEl=document.getElementById('area-hm');
+    if(hmEl){
+      var hmHtml='';
+      for(var ai=0;ai<areas.length;ai++){
+        hmHtml+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">';
+        hmHtml+='<div style="width:80px;font-size:9px;color:var(--t3);text-align:right;flex-shrink:0">'+areas[ai]+'</div>';
+        hmHtml+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;flex:1">';
+        for(var di=0;di<7;di++){
+          var lv=Math.floor(Math.random()*6);
+          hmHtml+='<div class="hm-cell l'+lv+'"></div>';
+        }
+        hmHtml+='</div></div>';
+      }
+      hmEl.innerHTML=hmHtml;
+    }
+    var rcRadar=document.getElementById('ar-radar');
+    if(rcRadar){
+      if(charts['ar-radar']){try{charts['ar-radar'].destroy();}catch(e){}}
+      charts['ar-radar']=new Chart(rcRadar,{
+        type:'radar',
+        data:{
+          labels:['Order Vol.','Growth','Restaurants','Riders','User Density','Avg Order'],
+          datasets:[
+            {label:'Kondapur',data:[20,85,25,30,60,70],borderColor:col('grn',0.8),backgroundColor:col('grn',0.12),pointRadius:4},
+            {label:'Best (Gachi)',data:[100,64,100,100,100,90],borderColor:col('red',0.8),backgroundColor:col('red',0.06),pointRadius:4}
+          ]
+        },
+        options:{
+          responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{display:true,labels:{color:'rgba(120,113,108,0.9)',font:{size:9},boxWidth:8}}},
+          scales:{r:{beginAtZero:true,ticks:{display:false},grid:{color:'rgba(0,0,0,0.06)'},pointLabels:{color:'rgba(120,113,108,0.9)',font:{size:9}}}}
+        }
+      });
+    }
+  }
+
+  if(viewId==='complaints'){
+    mkLine('compl-speed',months6,[4.8,3.9,3.2,2.8,2.4,2.1],'grn',true);
+  }
+
+  if(viewId==='growth'){
+    mkLine('gr-wau',['W1','W2','W3','W4','W5','W6','W7','W8','W9','W10','W11','W12'],[820,940,1050,1180,1240,1320,1480,1620,1740,1890,2100,2340],'grn',true);
+  }
+
+  if(viewId==='quality'){
+    mkLine('ql-rating',months6,[4.4,4.5,4.5,4.6,4.6,4.7],'grn',true);
+    mkBar('ql-dist',['0-20','20-40','40-60','60-70','70-80','80-90','90-100'],[1,1,1,2,8,28,22],'grn');
+  }
+
+  if(viewId==='cohorts'){
+    // Build cohort matrix — pure HTML table, no JS function declarations
+    var cData=[
+      {m:'Nov 2024',n:420,v:[100,74,64,58,54,51]},
+      {m:'Dec 2024',n:380,v:[100,68,58,52,48,null]},
+      {m:'Jan 2025',n:510,v:[100,62,50,44,null,null]},
+      {m:'Feb 2025',n:640,v:[100,70,60,null,null,null]},
+      {m:'Mar 2025',n:820,v:[100,72,null,null,null,null]},
+      {m:'Apr 2025',n:960,v:[100,null,null,null,null,null]}
+    ];
+    var tb=document.getElementById('cohort-matrix');
+    if(tb){
+      var rows='';
+      for(var ri2=0;ri2<cData.length;ri2++){
+        var crow=cData[ri2];
+        rows+='<tr><td class="hi">'+crow.m+'</td><td>'+crow.n+'</td>';
+        for(var ci2=0;ci2<crow.v.length;ci2++){
+          var pct=crow.v[ci2];
+          var cellStyle;
+          if(pct===null){
+            cellStyle='background:var(--card2);color:var(--t4);';
+          } else if(pct===100){
+            cellStyle='background:rgba(21,128,61,0.15);color:var(--grn);';
+          } else if(pct<45){
+            cellStyle='background:rgba(200,41,10,0.12);color:var(--red);';
+          } else if(pct<60){
+            cellStyle='background:rgba(217,119,6,0.15);color:var(--amb2);';
+          } else {
+            cellStyle='background:rgba(21,128,61,0.12);color:var(--grn);';
+          }
+          rows+='<td style="'+cellStyle+'font-weight:700;text-align:center;padding:8px 6px;border-radius:5px">'+(pct===null?'&mdash;':pct+'%')+'</td>';
+        }
+        rows+='</tr>';
+      }
+      tb.innerHTML=rows;
+    }
+    // Charts: use setTimeout so canvas has dimensions after view is visible
+    setTimeout(function(){
+      var rc=document.getElementById('co-curves');
+      if(rc){
+        if(charts['co-curves']){try{charts['co-curves'].destroy();}catch(e){}}
+        charts['co-curves']=new Chart(rc,{
+          type:'line',
+          data:{
+            labels:['M0','M1','M2','M3','M4','M5'],
+            datasets:[
+              {label:'Super',data:[100,78,68,62,58,55],borderColor:'rgba(124,58,237,0.85)',backgroundColor:'rgba(124,58,237,0.08)',fill:true,tension:0.4,pointRadius:4,borderWidth:2.5},
+              {label:'Regular',data:[100,62,50,42,36,32],borderColor:'rgba(29,78,216,0.85)',backgroundColor:'rgba(29,78,216,0.07)',fill:true,tension:0.4,pointRadius:4,borderWidth:2.5},
+              {label:'Free',data:[100,38,26,18,12,8],borderColor:'rgba(168,160,154,0.7)',backgroundColor:'transparent',tension:0.4,pointRadius:3,borderWidth:2,borderDash:[5,4]}
+            ]
+          },
+          options:{
+            responsive:true,maintainAspectRatio:false,
+            plugins:{legend:{display:true,labels:{color:'rgba(120,113,108,0.9)',font:{size:10},boxWidth:10,padding:12}}},
+            scales:{
+              y:{beginAtZero:true,max:100,ticks:{font:{size:9},callback:function(pv){return pv+'%'}},grid:{color:'rgba(0,0,0,0.05)'}},
+              x:{ticks:{font:{size:10}},grid:{display:false}}
+            }
+          }
+        });
+      }
+      var t2o=document.getElementById('co-t2o');
+      if(t2o){
+        if(charts['co-t2o']){try{charts['co-t2o'].destroy();}catch(e){}}
+        charts['co-t2o']=new Chart(t2o,{
+          type:'bar',
+          data:{labels:['Same day','1 day','2 days','3 days','4-7 days','7+ days'],datasets:[{data:[12,22,24,18,14,10],backgroundColor:'rgba(217,119,6,0.75)',borderRadius:4,borderSkipped:false}]},
+          options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{font:{size:9}},grid:{color:'rgba(0,0,0,0.05)'}},x:{ticks:{font:{size:9}},grid:{display:false}}}}
+        });
+      }
+      var ltvc=document.getElementById('co-ltv');
+      if(ltvc){
+        if(charts['co-ltv']){try{charts['co-ltv'].destroy();}catch(e){}}
+        charts['co-ltv']=new Chart(ltvc,{
+          type:'bar',
+          data:{labels:['Nov','Dec','Jan','Feb','Mar','Apr'],datasets:[{data:[2840,2620,2280,1940,1480,820],backgroundColor:'rgba(21,128,61,0.75)',borderRadius:4,borderSkipped:false}]},
+          options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{font:{size:9}},grid:{color:'rgba(0,0,0,0.05)'}},x:{ticks:{font:{size:9}},grid:{display:false}}}}
+        });
+      }
+    },200);
+  }
+
+  if(viewId==='subscriptions'){
+    mkDoughnut('sub-usplit',[2930,1065,2847,12],[col('white',0.3),col('blue',0.7),col('purp',0.75),col('amb',0.75)]);
+    mkDoughnut('sub-rsplit',[18,34,9,2],[col('white',0.3),col('blue',0.7),col('purp',0.75),col('amb',0.75)]);
+    var mrrCanvas=document.getElementById('sub-mrr');
+    if(mrrCanvas){
+      if(charts['sub-mrr']){try{charts['sub-mrr'].destroy();}catch(e){}}
+      charts['sub-mrr']=new Chart(mrrCanvas,{
+        type:'bar',
+        data:{
+          labels:months6,
+          datasets:[
+            {label:'User subs',data:[320000,380000,440000,510000,580000,620000],backgroundColor:col('purp',0.7),borderRadius:4,borderSkipped:false},
+            {label:'Restaurant subs',data:[120000,148000,168000,185000,200000,220000],backgroundColor:col('amb',0.7),borderRadius:4,borderSkipped:false}
+          ]
+        },
+        options:{
+          responsive:true,maintainAspectRatio:false,
+          plugins:{legend:{display:true,labels:{color:'rgba(120,113,108,0.9)',font:{size:9},boxWidth:10}}},
+          scales:{
+            x:{stacked:true,ticks:{font:{size:9}},grid:{display:false}},
+            y:{stacked:true,beginAtZero:true,ticks:{font:{size:9}},grid:{color:'rgba(0,0,0,0.05)'}}
+          }
+        }
+      });
+    }
+    mkLine('sub-churn',months6,[6.8,6.1,5.4,4.9,4.6,4.2],'red',true);
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────
+initCharts('overview');
+</script>
+</body>
+</html>
